@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Play } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -70,9 +70,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md rounded-[14px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-8">
         <div className="flex flex-col items-center mb-8">
-          <div className="mc-bubble mb-4">
-            <span className="text-lg mr-1.5">🎬</span>
-            <span className="mc-text-gradient text-f-xl font-bold tracking-[0.1em] uppercase">Mission Control</span>
+          <div className="mc-bubble mb-4 flex items-center gap-2 px-4 py-2 rounded-[10px]">
+            <Play className="h-4 w-4 text-[#F59E0B] fill-[#F59E0B]" />
+            <span className="mc-text-gradient text-f-lg font-bold tracking-[0.1em] uppercase">Mission Control</span>
           </div>
           <p className="text-f-base text-white/40">Clementine & Astra</p>
         </div>

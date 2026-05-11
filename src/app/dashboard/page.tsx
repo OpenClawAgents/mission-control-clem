@@ -8,6 +8,9 @@ import {
   Zap,
   TrendingUp,
   Clock,
+  Plus,
+  Edit3,
+  Clapperboard,
 } from 'lucide-react'
 
 const agentSquad = [
@@ -18,12 +21,12 @@ const agentSquad = [
 ]
 
 const quickActions = [
-  { label: 'Add Content', href: '/dashboard/content', icon: '📝' },
-  { label: 'Catalog Video', href: '/dashboard/videos', icon: '🎬' },
-  { label: 'Write Digest', href: '/dashboard/digests', icon: '📰' },
-  { label: 'New Script', href: '/dashboard/scripts', icon: '✍️' },
-  { label: 'View Calendar', href: '/dashboard/calendar', icon: '📅' },
-  { label: 'Agent Status', href: '/dashboard/agents', icon: '🤖' },
+  { label: 'Add Content', href: '/dashboard/content', icon: BookOpen },
+  { label: 'Catalog Video', href: '/dashboard/videos', icon: Video },
+  { label: 'Write Digest', href: '/dashboard/digests', icon: Newspaper },
+  { label: 'New Script', href: '/dashboard/scripts', icon: Edit3 },
+  { label: 'View Calendar', href: '/dashboard/calendar', icon: Clock },
+  { label: 'Agent Status', href: '/dashboard/agents', icon: Bot },
 ]
 
 export default function DashboardPage() {
@@ -31,7 +34,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title="Overview"
-        subtitle="Welcome back, Clementine 🎬"
+        subtitle="Welcome back, Clementine"
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -95,16 +98,19 @@ export default function DashboardPage() {
             <h3 className="text-f-lg font-semibold text-white">Quick Actions</h3>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            {quickActions.map((action) => (
-              <a
-                key={action.label}
-                href={action.href}
-                className="flex items-center gap-3 py-3 px-4 rounded-[10px] bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.04] hover:border-[#F59E0B]/20 transition-all group"
-              >
-                <span className="text-lg">{action.icon}</span>
-                <span className="text-f-base text-white/80 group-hover:text-white">{action.label}</span>
-              </a>
-            ))}
+            {quickActions.map((action) => {
+              const Icon = action.icon
+              return (
+                <a
+                  key={action.label}
+                  href={action.href}
+                  className="flex items-center gap-3 py-3 px-4 rounded-[10px] bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.04] hover:border-[#F59E0B]/20 transition-all group"
+                >
+                  <Icon className="h-4 w-4 text-white/40 group-hover:text-[#F59E0B]" />
+                  <span className="text-f-base text-white/80 group-hover:text-white">{action.label}</span>
+                </a>
+              )
+            })}
           </div>
         </GlassCard>
       </div>

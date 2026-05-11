@@ -13,6 +13,7 @@ import {
   Settings,
   Menu,
   Zap,
+  Play,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -161,7 +162,7 @@ export function MobileSidebar({
         <SheetHeader className="h-16 flex flex-row items-center justify-center px-3 border-b border-white/[0.06] space-y-0">
           <Link href="/dashboard" onClick={() => onOpenChange(false)} className="cursor-pointer flex-1">
             <div className="mc-bubble flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-4 py-2">
-              <span className="text-lg">🎬</span>
+              <Play className="h-4 w-4 text-[#F59E0B] fill-[#F59E0B]" />
               <span className="mc-text-gradient text-f-lg font-bold tracking-[0.1em] uppercase">MC</span>
             </div>
           </Link>
@@ -193,14 +194,14 @@ export function Sidebar() {
         {!collapsed ? (
           <Link href="/dashboard" className="cursor-pointer flex-1">
             <div className="mc-bubble flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-4 py-2">
-              <span className="text-lg">🎬</span>
+              <Play className="h-4 w-4 text-[#F59E0B] fill-[#F59E0B]" />
               <span className="mc-text-gradient text-f-lg font-bold tracking-[0.1em] uppercase">MC</span>
             </div>
           </Link>
         ) : (
           <Link href="/dashboard" className="mx-auto cursor-pointer">
             <div className="mc-bubble flex h-10 w-10 items-center justify-center rounded-[10px]">
-              <span className="text-lg">🎬</span>
+              <Play className="h-4 w-4 text-[#F59E0B] fill-[#F59E0B]" />
             </div>
           </Link>
         )}

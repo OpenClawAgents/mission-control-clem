@@ -1,10 +1,15 @@
 import Link from 'next/link'
+import { Play } from 'lucide-react'
 
 export default function HomePage() {
   return (
     <main className="min-h-screen gradient-mesh flex flex-col items-center justify-center px-6">
       <div className="max-w-2xl text-center">
-        <div className="mb-6 text-6xl">🎬</div>
+        <div className="mb-6 flex justify-center">
+          <div className="h-16 w-16 rounded-[16px] bg-[#F59E0B]/10 border border-[#F59E0B]/20 flex items-center justify-center">
+            <Play className="h-7 w-7 text-[#F59E0B] fill-[#F59E0B]" />
+          </div>
+        </div>
         <h1 className="text-f-4xl font-bold text-white mb-4 tracking-tight">
           Mission Control
         </h1>

@@ -1,11 +1,11 @@
 import { PageHeader, GlassCard, EmptyState, MetricCard, StatusDot } from '@/components/ds'
-import { Newspaper, Plus, Scale, Church, Shield, Map } from 'lucide-react'
+import { Newspaper, Plus, Scale, Church, Shield, MapPin } from 'lucide-react'
 
 const categories = [
   { key: 'psychedelic_law', label: 'Psychedelic Law', icon: Scale, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
   { key: 'church', label: 'Church of Singularism', icon: Church, color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
   { key: 'dea', label: 'DEA Scheduling', icon: Shield, color: 'text-red-400 bg-red-500/10 border-red-500/20' },
-  { key: 'state_reform', label: 'State Reform', icon: Map, color: 'text-green-400 bg-green-500/10 border-green-500/20' },
+  { key: 'state_reform', label: 'State Reform', icon: MapPin, color: 'text-green-400 bg-green-500/10 border-green-500/20' },
 ]
 
 const keyBeats = [
@@ -69,7 +69,7 @@ export default function DigestsPage() {
           {categories.map((cat) => {
             const Icon = cat.icon
             return (
-              <div key={cat.key} className="rounded-[10px] border p-4 hover:scale-[1.02] transition-transform cursor-pointer" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+              <div key={cat.key} className="rounded-[10px] border border-white/[0.06] p-4 hover:scale-[1.02] transition-transform cursor-pointer">
                 <div className={`inline-flex items-center justify-center h-9 w-9 rounded-[10px] ${cat.color} border mb-3`}>
                   <Icon className="h-4 w-4" />
                 </div>
@@ -83,7 +83,7 @@ export default function DigestsPage() {
 
       <GlassCard hover={false}>
         <div className="flex items-center gap-2 mb-4">
-          <Map className="h-4 w-4 text-[#F59E0B]" />
+          <MapPin className="h-4 w-4 text-[#F59E0B]" />
           <h3 className="text-f-lg font-semibold text-white">Key Beats to Track</h3>
         </div>
         <div className="flex flex-wrap gap-2">

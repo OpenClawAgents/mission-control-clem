@@ -1,13 +1,13 @@
 import { PageHeader, GlassCard, EmptyState, MetricCard } from '@/components/ds'
-import { BookOpen, Plus, FileText, Sparkles, Newspaper, Hash } from 'lucide-react'
+import { BookOpen, Plus, FileText, Sparkles, Newspaper, Hash, Mail, PenTool, Share2, Search, Clapperboard } from 'lucide-react'
 
 const contentTypes = [
-  { type: 'Newsletter', icon: '📧', desc: 'Email newsletters & bulletins', count: 0 },
-  { type: 'Script', icon: '✍️', desc: 'Viral-ready video scripts', count: 0 },
-  { type: 'Social Post', icon: '📱', desc: 'Instagram, TikTok, YouTube', count: 0 },
-  { type: 'Research', icon: '🔍', desc: 'Source documents & analysis', count: 0 },
-  { type: 'Digest', icon: '📰', desc: 'Psychedelic law & church news', count: 0 },
-  { type: 'Video Clip', icon: '🎬', desc: 'Tagged footage segments', count: 0 },
+  { type: 'Newsletter', icon: Mail, desc: 'Email newsletters & bulletins', count: 0 },
+  { type: 'Script', icon: PenTool, desc: 'Viral-ready video scripts', count: 0 },
+  { type: 'Social Post', icon: Share2, desc: 'Instagram, TikTok, YouTube', count: 0 },
+  { type: 'Research', icon: Search, desc: 'Source documents & analysis', count: 0 },
+  { type: 'Digest', icon: Newspaper, desc: 'Psychedelic law & church news', count: 0 },
+  { type: 'Video Clip', icon: Clapperboard, desc: 'Tagged footage segments', count: 0 },
 ]
 
 const contentStatuses = [
@@ -68,16 +68,19 @@ export default function ContentPage() {
           <h3 className="text-f-lg font-semibold text-white">Content Types</h3>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {contentTypes.map((ct) => (
-            <div key={ct.type} className="rounded-[10px] border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04] hover:border-[#F59E0B]/20 transition-all cursor-pointer">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">{ct.icon}</span>
-                <span className="text-f-base font-medium text-white">{ct.type}</span>
+          {contentTypes.map((ct) => {
+            const Icon = ct.icon
+            return (
+              <div key={ct.type} className="rounded-[10px] border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04] hover:border-[#F59E0B]/20 transition-all cursor-pointer">
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon className="h-4 w-4 text-white/50" />
+                  <span className="text-f-base font-medium text-white">{ct.type}</span>
+                </div>
+                <p className="text-f-xs text-white/40">{ct.desc}</p>
+                <p className="text-f-sm text-white/60 mt-2">{ct.count} items</p>
               </div>
-              <p className="text-f-xs text-white/40">{ct.desc}</p>
-              <p className="text-f-sm text-white/60 mt-2">{ct.count} items</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </GlassCard>
 
