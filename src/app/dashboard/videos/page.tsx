@@ -1,7 +1,31 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, EmptyState, MetricCard } from '@/components/ds'
 import { Video, Plus, HardDrive, Clock, Tag } from 'lucide-react'
+import { getVideos, type Video as VideoType } from '@/lib/api'
 
 export default function VideosPage() {
+  const [videos, setVideos] = useState<VideoType[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getVideos()
+        setVideos(data)
+      } catch {
+        // Auth or empty table is fine
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const totalDuration = videos.reduce((sum, v) => sum + (v.duration_seconds || 0), 0)
+  const taggedCount = videos.filter(v => v.tags && v.tags.length > 0).length
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -18,21 +42,21 @@ export default function VideosPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Total Videos"
-          value="0"
+          value={loading ? '...' : String(videos.length)}
           icon={<Video className="h-5 w-5" />}
         />
         <MetricCard
           label="Total Duration"
-          value="0m"
-          change="Catalog ready"
+          value={totalDuration > 0 ? `${Math.round(totalDuration / 60)}m` : '0m'}
+          change={videos.length > 0 ? 'Cataloged' : 'Catalog ready'}
           changeType="neutral"
           icon={<Clock className="h-5 w-5" />}
         />
         <MetricCard
           label="Tagged"
-          value="0"
-          change="Add tags for search"
-          changeType="neutral"
+          value={loading ? '...' : String(taggedCount)}
+          change={taggedCount > 0 ? `${taggedCount} searchable` : 'Add tags for search'}
+          changeType={taggedCount > 0 ? 'positive' : 'neutral'}
           icon={<Tag className="h-5 w-5" />}
         />
         <MetricCard
@@ -65,19 +89,52 @@ export default function VideosPage() {
         </div>
       </GlassCard>
 
-      <GlassCard hover={false}>
-        <EmptyState
-          icon={<Video className="h-12 w-12" />}
-          title="No videos cataloged"
-          description="Tag clips from /Volumes/ClemVideo/RawFootage with metadata for fast search and retrieval. Searchable beats scrollable."
-          action={
-            <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-              <Plus className="h-4 w-4" />
-              Catalog Your First Video
-            </button>
-          }
-        />
-      </GlassCard>
+      {videos.length > 0 ? (
+        <GlassCard hover={false}>
+          <div className="flex items-center gap-2 mb-4">
+            <Video className="h-4 w-4 text-[#F59E0B]" />
+            <h3 className="text-f-lg font-semibold text-white">Cataloged Videos</h3>
+          </div>
+          <div className="space-y-2">
+            {videos.map((video) => (
+              <div key={video.id} className="flex items-center justify-between py-3 px-4 rounded-[10px] border border-white/[0.04] hover:bg-white/[0.03] transition-all">
+                <div className="min-w-0 flex-1">
+                  <p className="text-f-base text-white/90 font-medium truncate">{video.title}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    {video.duration_seconds && (
+                      <span className="text-f-xs text-white/40">{Math.round(video.duration_seconds / 60)}m</span>
+                    )}
+                    {video.resolution && (
+                      <span className="text-f-xs text-white/40">{video.resolution}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1 ml-3">
+                  {video.tags?.map((tag) => (
+                    <span key={tag} className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 text-f-2xs text-white/50">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      ) : (
+        <GlassCard hover={false}>
+          <EmptyState
+            icon={<Video className="h-12 w-12" />}
+            title="No videos cataloged"
+            description="Tag clips from /Volumes/ClemVideo/RawFootage with metadata for fast search and retrieval. Searchable beats scrollable."
+            action={
+              <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
+                <Plus className="h-4 w-4" />
+                Catalog Your First Video
+              </button>
+            }
+          />
+        </GlassCard>
+      )}
     </div>
   )
 }

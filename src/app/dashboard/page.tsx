@@ -1,3 +1,6 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import { PageHeader, MetricCard, GlassCard, StatusDot } from '@/components/ds'
 import {
   BookOpen,
@@ -8,10 +11,9 @@ import {
   Zap,
   TrendingUp,
   Clock,
-  Plus,
   Edit3,
-  Clapperboard,
 } from 'lucide-react'
+import { getContentCounts, getDigestCounts, type ContentType, type ContentStatus } from '@/lib/api'
 
 const agentSquad = [
   { name: 'Content Strategist', desc: 'Plans content calendar & repurposes newsletters', status: 'online' as const },
@@ -30,6 +32,30 @@ const quickActions = [
 ]
 
 export default function DashboardPage() {
+  const [contentCounts, setContentCounts] = useState<{ type: ContentType; status: ContentStatus }[]>([])
+  const [digestCounts, setDigestCounts] = useState<{ category: string }[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [cc, dc] = await Promise.all([getContentCounts(), getDigestCounts()])
+        setContentCounts(cc)
+        setDigestCounts(dc)
+      } catch {
+        // Tables exist but may be empty — that's fine
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const totalContent = contentCounts.length
+  const totalDigests = digestCounts.length
+  const scriptCount = contentCounts.filter(c => c.type === 'script').length
+  const publishedCount = contentCounts.filter(c => c.status === 'published').length
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -40,9 +66,9 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Content Items"
-          value="0"
-          change="Ready to add"
-          changeType="neutral"
+          value={loading ? '...' : String(totalContent)}
+          change={totalContent > 0 ? `${publishedCount} published` : 'Ready to add'}
+          changeType={totalContent > 0 ? 'positive' : 'neutral'}
           icon={<BookOpen className="h-5 w-5" />}
         />
         <MetricCard
@@ -54,16 +80,16 @@ export default function DashboardPage() {
         />
         <MetricCard
           label="Digests"
-          value="0"
-          change="Starting soon"
-          changeType="neutral"
+          value={loading ? '...' : String(totalDigests)}
+          change={totalDigests > 0 ? `${totalDigests} total` : 'Starting soon'}
+          changeType={totalDigests > 0 ? 'positive' : 'neutral'}
           icon={<Newspaper className="h-5 w-5" />}
         />
         <MetricCard
           label="Scripts"
-          value="0"
-          change="Write your first"
-          changeType="neutral"
+          value={loading ? '...' : String(scriptCount)}
+          change={scriptCount > 0 ? 'In library' : 'Write your first'}
+          changeType={scriptCount > 0 ? 'positive' : 'neutral'}
           icon={<FileText className="h-5 w-5" />}
         />
       </div>
@@ -131,7 +157,11 @@ export default function DashboardPage() {
               <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-f-xs font-medium ${beat.color}`}>
                 {beat.label}
               </span>
-              <p className="mt-2 text-f-sm text-white/40">No updates yet</p>
+              <p className="mt-2 text-f-sm text-white/40">
+                {digestCounts.length > 0
+                  ? `${digestCounts.filter(d => d.category === beat.label.toLowerCase().replace(/\s/g, '_')).length} updates`
+                  : 'No updates yet'}
+              </p>
             </div>
           ))}
         </div>
