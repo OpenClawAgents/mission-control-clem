@@ -7,9 +7,12 @@ import {
   BookOpen,
   Video,
   Newspaper,
+  Bot,
+  FileText,
+  Calendar,
   Settings,
   Menu,
-  FileText,
+  Zap,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -46,12 +49,20 @@ const sections: NavSection[] = [
       { label: 'Content Library', href: '/dashboard/content', icon: BookOpen },
       { label: 'Video Catalog', href: '/dashboard/videos', icon: Video },
       { label: 'Digests', href: '/dashboard/digests', icon: Newspaper },
+      { label: 'Scripts', href: '/dashboard/scripts', icon: FileText },
+    ],
+  },
+  {
+    title: 'Operations',
+    items: [
+      { label: 'Agents', href: '/dashboard/agents', icon: Bot },
+      { label: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
+      { label: 'Automation', href: '/dashboard/automation', icon: Zap },
     ],
   },
   {
     title: 'System',
     items: [
-      { label: 'Docs', href: '/dashboard/docs', icon: FileText },
       { label: 'Settings', href: '/dashboard/settings', icon: Settings },
     ],
   },
@@ -84,20 +95,20 @@ function SidebarNav({
           )}
           <div className="space-y-0.5">
             {section.items.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href)
               const Icon = item.icon
 
               const linkClasses = collapsed
                 ? cn(
                     'group relative flex items-center rounded-[10px] transition-all duration-200 justify-center',
                     isActive
-                      ? 'bg-white/[0.06] shadow-[0_0_12px_rgba(255,45,160,0.06)] p-2.5'
+                      ? 'bg-white/[0.06] shadow-[0_0_12px_rgba(245,158,11,0.06)] p-2.5'
                       : 'text-white/50 hover:bg-white/[0.04] p-2.5'
                   )
                 : cn(
                     'group relative flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-f-base font-medium transition-all duration-200',
                     isActive
-                      ? 'bg-white/[0.06] text-white shadow-[0_0_12px_rgba(255,45,160,0.06)]'
+                      ? 'bg-white/[0.06] text-white shadow-[0_0_12px_rgba(245,158,11,0.06)]'
                       : 'text-white/50 hover:bg-white/[0.04] hover:text-white/80'
                   )
 
@@ -110,19 +121,19 @@ function SidebarNav({
                   className={linkClasses}
                 >
                   {isActive && !collapsed && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-[#FF2DA0] shadow-[0_0_6px_rgba(255,45,160,0.4)]" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-[#F59E0B] shadow-[0_0_6px_rgba(245,158,11,0.4)]" />
                   )}
                   <Icon
                     className={cn(
                       'h-[18px] w-[18px] shrink-0 transition-colors duration-200',
                       isActive
-                        ? 'text-[#FF2DA0]'
+                        ? 'text-[#F59E0B]'
                         : 'text-white/40 group-hover:text-white/60'
                     )}
                   />
                   {!collapsed && <span>{item.label}</span>}
                   {isActive && collapsed && (
-                    <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-[3px] rounded-full bg-[#FF2DA0] shadow-[0_0_6px_rgba(255,45,160,0.4)]" />
+                    <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-[3px] rounded-full bg-[#F59E0B] shadow-[0_0_6px_rgba(245,158,11,0.4)]" />
                   )}
                 </Link>
               )
@@ -150,8 +161,8 @@ export function MobileSidebar({
         <SheetHeader className="h-16 flex flex-row items-center justify-center px-3 border-b border-white/[0.06] space-y-0">
           <Link href="/dashboard" onClick={() => onOpenChange(false)} className="cursor-pointer flex-1">
             <div className="mc-bubble flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-4 py-2">
-              <span className="mc-text-gradient text-f-lg font-bold tracking-[0.15em] uppercase">MC</span>
-              <span className="text-f-sm font-medium text-white/50 tracking-[0.1em] uppercase">Clem</span>
+              <span className="text-lg">🎬</span>
+              <span className="mc-text-gradient text-f-lg font-bold tracking-[0.1em] uppercase">MC</span>
             </div>
           </Link>
           <SheetTitle className="sr-only">Mission Control</SheetTitle>
@@ -182,14 +193,14 @@ export function Sidebar() {
         {!collapsed ? (
           <Link href="/dashboard" className="cursor-pointer flex-1">
             <div className="mc-bubble flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-4 py-2">
-              <span className="mc-text-gradient text-f-lg font-bold tracking-[0.15em] uppercase">MC</span>
-              <span className="text-f-sm font-medium text-white/50 tracking-[0.1em] uppercase">Clem</span>
+              <span className="text-lg">🎬</span>
+              <span className="mc-text-gradient text-f-lg font-bold tracking-[0.1em] uppercase">MC</span>
             </div>
           </Link>
         ) : (
           <Link href="/dashboard" className="mx-auto cursor-pointer">
             <div className="mc-bubble flex h-10 w-10 items-center justify-center rounded-[10px]">
-              <span className="mc-text-gradient text-f-xl font-bold">🎬</span>
+              <span className="text-lg">🎬</span>
             </div>
           </Link>
         )}

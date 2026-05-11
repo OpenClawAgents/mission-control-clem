@@ -38,7 +38,7 @@ export function TopBar() {
             <input
               type="text"
               placeholder="Search..."
-              className="w-full h-9 rounded-[10px] bg-white/[0.03] border border-white/[0.06] text-f-base text-white placeholder-white/30 pl-9 pr-4 outline-none focus:border-[#FF2DA0]/30 focus:shadow-[0_0_12px_rgba(255,45,160,0.08)]"
+              className="w-full h-9 rounded-[10px] bg-white/[0.03] border border-white/[0.06] text-f-base text-white placeholder-white/30 pl-9 pr-4 outline-none focus:border-[#F59E0B]/30 focus:shadow-[0_0_12px_rgba(245,158,11,0.08)]"
             />
           </div>
         </div>
@@ -48,7 +48,7 @@ export function TopBar() {
         </Button>
 
         <Link href="/dashboard/settings" className="ml-2 flex items-center gap-2 rounded-[10px] px-3 py-1.5 hover:bg-white/[0.04] transition-colors">
-          <div className="h-8 w-8 rounded-full bg-[#FF2DA0]/15 flex items-center justify-center text-f-sm font-bold text-[#FF2DA0]">
+          <div className="h-8 w-8 rounded-full bg-[#F59E0B]/15 flex items-center justify-center text-f-sm font-bold text-[#F59E0B]">
             C
           </div>
           <span className="hidden md:block text-f-base text-white/70">Clementine</span>

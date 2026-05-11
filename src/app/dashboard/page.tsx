@@ -1,22 +1,37 @@
-import { PageHeader } from '@/components/ds'
-import { MetricCard } from '@/components/ds'
-import { GlassCard } from '@/components/ds'
-import { StatusDot } from '@/components/ds'
+import { PageHeader, MetricCard, GlassCard, StatusDot } from '@/components/ds'
 import {
   BookOpen,
   Video,
   Newspaper,
+  FileText,
+  Bot,
+  Zap,
   TrendingUp,
   Clock,
-  Zap,
 } from 'lucide-react'
+
+const agentSquad = [
+  { name: 'Content Strategist', desc: 'Plans content calendar & repurposes newsletters', status: 'online' as const },
+  { name: 'Research Scout', desc: 'Monitors psychedelic law, DEA, church rulings', status: 'online' as const },
+  { name: 'Script Writer', desc: 'Produces viral-ready scripts with hooks & angles', status: 'online' as const },
+  { name: 'Digest Compiler', desc: 'Assembles daily digests from research sources', status: 'idle' as const },
+]
+
+const quickActions = [
+  { label: 'Add Content', href: '/dashboard/content', icon: '📝' },
+  { label: 'Catalog Video', href: '/dashboard/videos', icon: '🎬' },
+  { label: 'Write Digest', href: '/dashboard/digests', icon: '📰' },
+  { label: 'New Script', href: '/dashboard/scripts', icon: '✍️' },
+  { label: 'View Calendar', href: '/dashboard/calendar', icon: '📅' },
+  { label: 'Agent Status', href: '/dashboard/agents', icon: '🤖' },
+]
 
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <PageHeader
         title="Overview"
-        subtitle="Welcome back, Clementine"
+        subtitle="Welcome back, Clementine 🎬"
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -42,32 +57,32 @@ export default function DashboardPage() {
           icon={<Newspaper className="h-5 w-5" />}
         />
         <MetricCard
-          label="Active Agents"
-          value="3"
-          change="All systems go"
-          changeType="positive"
-          icon={<Zap className="h-5 w-5" />}
+          label="Scripts"
+          value="0"
+          change="Write your first"
+          changeType="neutral"
+          icon={<FileText className="h-5 w-5" />}
         />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <GlassCard>
           <div className="mb-4 flex items-center gap-2">
-            <StatusDot status="working" />
-            <h3 className="text-f-lg font-semibold text-white">System Status</h3>
+            <Bot className="h-4 w-4 text-[#F59E0B]" />
+            <h3 className="text-f-lg font-semibold text-white">Agent Squad</h3>
           </div>
           <div className="space-y-3">
-            {[
-              { name: 'Content Library', status: 'Ready' },
-              { name: 'Video Catalog', status: 'Ready' },
-              { name: 'News Digests', status: 'Ready' },
-              { name: 'Supabase', status: 'Connected' },
-            ].map((item) => (
-              <div key={item.name} className="flex items-center justify-between py-2 border-t border-white/[0.04]">
-                <span className="text-f-base text-white/80">{item.name}</span>
-                <span className="flex items-center gap-2 text-f-sm text-[#22C55E]">
-                  <StatusDot status="online" size="sm" />
-                  {item.status}
+            {agentSquad.map((agent) => (
+              <div key={agent.name} className="flex items-center justify-between py-2 border-t border-white/[0.04]">
+                <div className="min-w-0">
+                  <span className="text-f-base text-white/90 font-medium">{agent.name}</span>
+                  <p className="text-f-xs text-white/50 truncate">{agent.desc}</p>
+                </div>
+                <span className="flex items-center gap-2 text-f-sm shrink-0 ml-3">
+                  <StatusDot status={agent.status} size="sm" />
+                  <span className={agent.status === 'online' ? 'text-[#22C55E]' : 'text-[#F59E0B]'}>
+                    {agent.status === 'online' ? 'Online' : 'Idle'}
+                  </span>
                 </span>
               </div>
             ))}
@@ -76,28 +91,45 @@ export default function DashboardPage() {
 
         <GlassCard>
           <div className="mb-4 flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-[#FF2DA0]" />
+            <Zap className="h-4 w-4 text-[#F59E0B]" />
             <h3 className="text-f-lg font-semibold text-white">Quick Actions</h3>
           </div>
-          <div className="space-y-2">
-            {[
-              { label: 'Add Content', href: '/dashboard/content' },
-              { label: 'Catalog Video', href: '/dashboard/videos' },
-              { label: 'Write Digest', href: '/dashboard/digests' },
-              { label: 'View Docs', href: '/dashboard/docs' },
-            ].map((action) => (
+          <div className="grid grid-cols-2 gap-2">
+            {quickActions.map((action) => (
               <a
                 key={action.label}
                 href={action.href}
-                className="flex items-center justify-between py-3 px-4 rounded-[10px] bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.04] hover:border-white/[0.08] transition-all group"
+                className="flex items-center gap-3 py-3 px-4 rounded-[10px] bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.04] hover:border-[#F59E0B]/20 transition-all group"
               >
+                <span className="text-lg">{action.icon}</span>
                 <span className="text-f-base text-white/80 group-hover:text-white">{action.label}</span>
-                <span className="text-f-sm text-white/30 group-hover:text-white/60">→</span>
               </a>
             ))}
           </div>
         </GlassCard>
       </div>
+
+      <GlassCard hover={false}>
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="h-4 w-4 text-white/40" />
+          <h3 className="text-f-lg font-semibold text-white">Research Beats</h3>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'Psychedelic Law', color: 'bg-purple-500/20 text-purple-400' },
+            { label: 'Church of Singularism', color: 'bg-blue-500/20 text-blue-400' },
+            { label: 'DEA Scheduling', color: 'bg-red-500/20 text-red-400' },
+            { label: 'State Reform', color: 'bg-green-500/20 text-green-400' },
+          ].map((beat) => (
+            <div key={beat.label} className="rounded-[10px] border border-white/[0.06] bg-white/[0.02] p-3 text-center">
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-f-xs font-medium ${beat.color}`}>
+                {beat.label}
+              </span>
+              <p className="mt-2 text-f-sm text-white/40">No updates yet</p>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
 
       <GlassCard hover={false}>
         <div className="flex items-center gap-2 mb-4">

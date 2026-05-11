@@ -8,14 +8,16 @@ export default function HomePage() {
         <h1 className="text-f-4xl font-bold text-white mb-4 tracking-tight">
           Mission Control
         </h1>
-        <p className="text-f-lg text-white/65 mb-8 leading-relaxed">
-          Content creation, research, and video management.<br />
+        <p className="text-f-lg text-white/65 mb-2 leading-relaxed">
+          Content creation, research, and video management.
+        </p>
+        <p className="text-f-base text-white/40 mb-8">
           Built for Clementine & Astra.
         </p>
         <div className="flex gap-4 justify-center">
           <Link
             href="/auth/login"
-            className="px-6 py-3 bg-[#FF2DA0]/15 text-white font-semibold rounded-[12px] border border-[#FF2DA0]/20 hover:bg-[#FF2DA0]/25 transition-all"
+            className="px-6 py-3 bg-[#F59E0B]/15 text-white font-semibold rounded-[12px] border border-[#F59E0B]/20 hover:bg-[#F59E0B]/25 transition-all"
           >
             Sign In
           </Link>

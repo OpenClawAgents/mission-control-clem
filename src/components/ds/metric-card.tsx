@@ -13,6 +13,7 @@ export interface MetricCardProps {
   className?: string
 }
 
+// Accent color matches --mc-accent (#F59E0B)
 const changeStyles: Record<MetricChangeType, string> = {
   positive: 'bg-[#22C55E]/20 text-[#22C55E]',
   negative: 'bg-[#EF4444]/20 text-[#EF4444]',

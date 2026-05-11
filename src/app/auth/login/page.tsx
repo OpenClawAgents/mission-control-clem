@@ -61,7 +61,7 @@ export default function LoginPage() {
   if (checkingSession) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#FF2DA0]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#F59E0B]" />
       </div>
     )
   }
@@ -71,10 +71,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-[14px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-8">
         <div className="flex flex-col items-center mb-8">
           <div className="mc-bubble mb-4">
-            <span className="mc-text-gradient text-f-xl font-bold tracking-[0.15em] uppercase">MC</span>
-            <span className="text-f-sm font-medium text-white/50 tracking-[0.1em] uppercase ml-1">Clem</span>
+            <span className="text-lg mr-1.5">🎬</span>
+            <span className="mc-text-gradient text-f-xl font-bold tracking-[0.1em] uppercase">Mission Control</span>
           </div>
-          <p className="text-f-base text-white/40">Mission Control</p>
+          <p className="text-f-base text-white/40">Clementine & Astra</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -86,7 +86,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
-              className="w-full rounded-[10px] border border-white/[0.08] bg-white/[0.04] text-white placeholder:text-white/30 focus:border-[#FF2DA0]/40 focus:ring-1 focus:ring-[#FF2DA0]/20 px-4 py-3 outline-none transition-all"
+              className="w-full rounded-[10px] border border-white/[0.08] bg-white/[0.04] text-white placeholder:text-white/30 focus:border-[#F59E0B]/40 focus:ring-1 focus:ring-[#F59E0B]/20 px-4 py-3 outline-none transition-all"
             />
           </div>
 
@@ -98,7 +98,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
-              className="w-full rounded-[10px] border border-white/[0.08] bg-white/[0.04] text-white placeholder:text-white/30 focus:border-[#FF2DA0]/40 focus:ring-1 focus:ring-[#FF2DA0]/20 px-4 py-3 outline-none transition-all"
+              className="w-full rounded-[10px] border border-white/[0.08] bg-white/[0.04] text-white placeholder:text-white/30 focus:border-[#F59E0B]/40 focus:ring-1 focus:ring-[#F59E0B]/20 px-4 py-3 outline-none transition-all"
             />
           </div>
 
@@ -107,7 +107,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-[12px] bg-[#FF2DA0]/15 text-white font-medium py-3 hover:bg-[#FF2DA0]/25 border border-[#FF2DA0]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full rounded-[12px] bg-[#F59E0B]/15 text-white font-medium py-3 hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
