@@ -21,17 +21,19 @@ export const CATEGORY_CONFIG: Record<SkillCategory, { label: string; color: stri
 }
 
 /**
- * Clem's Mission Control skills.
- * Maps to real OpenClaw agent skills + automated workflows.
+ * Skill definitions — the static metadata (name, description, category)
+ * that can't be inferred from cron jobs alone.
+ *
+ * Status and cron schedule will be overridden by live data when available.
  */
-export const SKILLS: SkillMeta[] = [
+export const SKILL_DEFINITIONS: SkillMeta[] = [
   {
     id: 'content-strategist',
     name: 'Content Strategist',
     description: 'Plans content calendar, repurposes newsletters into social assets, manages publishing queue',
     status: 'active',
-    cronSchedule: '0 9 * * 1',
-    cronName: 'content-weekly-plan',
+    cronSchedule: null,
+    cronName: null,
     agents: ['content-strategist'],
     category: 'content',
   },
@@ -60,8 +62,8 @@ export const SKILLS: SkillMeta[] = [
     name: 'Research Scout',
     description: 'Monitors psychedelic law, DEA scheduling, church rulings, and state reform sources',
     status: 'active',
-    cronSchedule: '0 8 * * *',
-    cronName: 'research-daily-scan',
+    cronSchedule: null,
+    cronName: null,
     agents: ['research-scout'],
     category: 'research',
   },
@@ -70,8 +72,8 @@ export const SKILLS: SkillMeta[] = [
     name: 'Digest Compiler',
     description: 'Assembles daily digests from research sources, RSS feeds, and law trackers',
     status: 'active',
-    cronSchedule: '0 7 * * *',
-    cronName: 'digest-daily',
+    cronSchedule: null,
+    cronName: null,
     agents: ['digest-compiler'],
     category: 'research',
   },
@@ -80,8 +82,8 @@ export const SKILLS: SkillMeta[] = [
     name: 'Law & Policy Tracker',
     description: 'Tracks DEA scheduling changes, FDA designations, and state-level psychedelic reform bills',
     status: 'active',
-    cronSchedule: '0 */6 * * *',
-    cronName: 'law-tracker-check',
+    cronSchedule: null,
+    cronName: null,
     agents: ['research-scout'],
     category: 'research',
   },
@@ -110,8 +112,8 @@ export const SKILLS: SkillMeta[] = [
     name: 'System Health Check',
     description: 'Monitors Supabase status, API health, and deployment uptime for Mission Control',
     status: 'active',
-    cronSchedule: '0 */4 * * *',
-    cronName: 'system-health-check',
+    cronSchedule: null,
+    cronName: null,
     agents: ['clem'],
     category: 'automation',
   },
@@ -120,17 +122,79 @@ export const SKILLS: SkillMeta[] = [
     name: 'Nightly Backup',
     description: 'Backs up content, digests, and video metadata from Supabase nightly',
     status: 'active',
-    cronSchedule: '0 2 * * *',
-    cronName: 'backup-nightly',
+    cronSchedule: null,
+    cronName: null,
     agents: ['clem'],
     category: 'automation',
   },
 ]
 
-export function getSkillCounts() {
-  const active = SKILLS.filter(s => s.status === 'active').length
-  const disabled = SKILLS.filter(s => s.status === 'disabled').length
-  const total = SKILLS.length
-  const withCron = SKILLS.filter(s => s.cronSchedule).length
+/**
+ * Merge live cron data into skill definitions.
+ * Matches by name (cron job name contains the skill id keywords).
+ */
+export function mergeCronData(skills: SkillMeta[], cronJobs: CronJob[]): SkillMeta[] {
+  return skills.map(skill => {
+    // Try to find a matching cron job by name or id
+    const cron = cronJobs.find(j =>
+      j.name?.toLowerCase().includes(skill.id.replace(/-/g, '')) ||
+      j.name?.toLowerCase().includes(skill.id.replace(/-/g, ' ')) ||
+      j.id.toLowerCase().includes(skill.id.replace(/-/g, ''))
+    )
+
+    if (!cron) return skill
+
+    return {
+      ...skill,
+      status: cron.enabled ? 'active' : 'disabled',
+      cronSchedule: cron.schedule?.expr || cron.schedule?.everyMs ? formatSchedule(cron.schedule) : null,
+      cronName: cron.name || null,
+    }
+  })
+}
+
+export interface CronJob {
+  id: string
+  name?: string
+  description?: string
+  enabled: boolean
+  schedule: {
+    kind: string
+    expr?: string
+    everyMs?: number
+    at?: string
+    [key: string]: unknown
+  }
+  payload: {
+    kind: string
+    text?: string
+    message?: string
+    [key: string]: unknown
+  }
+  delivery?: {
+    mode: string
+    [key: string]: unknown
+  }
+  sessionTarget?: string
+  lastRunAt?: number
+  nextRunAt?: number
+}
+
+function formatSchedule(schedule: CronJob['schedule']): string | null {
+  if (schedule.kind === 'cron' && schedule.expr) return schedule.expr
+  if (schedule.kind === 'every' && schedule.everyMs) {
+    const min = Math.round(schedule.everyMs / 60000)
+    if (min >= 60) return `every ${Math.round(min / 60)}h`
+    return `every ${min}m`
+  }
+  if (schedule.kind === 'at' && schedule.at) return `at ${schedule.at}`
+  return null
+}
+
+export function getSkillCounts(skills: SkillMeta[]) {
+  const active = skills.filter(s => s.status === 'active').length
+  const disabled = skills.filter(s => s.status === 'disabled').length
+  const total = skills.length
+  const withCron = skills.filter(s => s.cronSchedule).length
   return { active, disabled, total, withCron }
 }
