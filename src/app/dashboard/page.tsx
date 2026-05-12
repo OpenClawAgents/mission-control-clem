@@ -12,15 +12,30 @@ import {
   TrendingUp,
   Clock,
   Edit3,
+  Cpu,
+  Activity,
 } from 'lucide-react'
 import { getContentCounts, getDigestCounts, type ContentType, type ContentStatus } from '@/lib/api'
 
-const agentSquad = [
-  { name: 'Content Strategist', desc: 'Plans content calendar & repurposes newsletters', status: 'online' as const },
-  { name: 'Research Scout', desc: 'Monitors psychedelic law, DEA, church rulings', status: 'online' as const },
-  { name: 'Script Writer', desc: 'Produces viral-ready scripts with hooks & angles', status: 'online' as const },
-  { name: 'Digest Compiler', desc: 'Assembles daily digests from research sources', status: 'idle' as const },
-]
+interface SessionInfo {
+  key: string
+  agentId: string
+  kind: string
+  channel: string
+  model: string
+  status: string
+  updatedAt: number
+  totalTokens: number
+  contextTokens: number
+  lastChannel?: string
+}
+
+interface HeartbeatAgent {
+  agentId: string
+  enabled: boolean
+  every: string
+  everyMs: number
+}
 
 const quickActions = [
   { label: 'Add Content', href: '/dashboard/content', icon: BookOpen },
@@ -31,9 +46,36 @@ const quickActions = [
   { label: 'Agent Status', href: '/dashboard/agents', icon: Bot },
 ]
 
+function formatAge(ms: number): string {
+  const sec = Math.floor(ms / 1000)
+  if (sec < 60) return `${sec}s ago`
+  const min = Math.floor(sec / 60)
+  if (min < 60) return `${min}m ago`
+  const hr = Math.floor(min / 60)
+  if (hr < 24) return `${hr}h ago`
+  const d = Math.floor(hr / 24)
+  return `${d}d ago`
+}
+
+function channelLabel(channel: string): string {
+  const map: Record<string, string> = {
+    webchat: 'Web Chat',
+    discord: 'Discord',
+    telegram: 'Telegram',
+    signal: 'Signal',
+    whatsapp: 'WhatsApp',
+    slack: 'Slack',
+    heartbeat: 'Heartbeat',
+  }
+  return map[channel] || channel
+}
+
 export default function DashboardPage() {
   const [contentCounts, setContentCounts] = useState<{ type: ContentType; status: ContentStatus }[]>([])
   const [digestCounts, setDigestCounts] = useState<{ category: string }[]>([])
+  const [sessions, setSessions] = useState<SessionInfo[]>([])
+  const [heartbeatAgents, setHeartbeatAgents] = useState<HeartbeatAgent[]>([])
+  const [gwVersion, setGwVersion] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -43,10 +85,28 @@ export default function DashboardPage() {
         setContentCounts(cc)
         setDigestCounts(dc)
       } catch {
-        // Tables exist but may be empty — that's fine
-      } finally {
-        setLoading(false)
+        // Tables may be empty
       }
+
+      try {
+        const [sessRes, gwRes] = await Promise.all([
+          fetch('/api/sessions'),
+          fetch('/api/gateway/status'),
+        ])
+        if (sessRes.ok) {
+          const sessData = await sessRes.json()
+          setSessions(sessData.sessions ?? [])
+        }
+        if (gwRes.ok) {
+          const gwData = await gwRes.json()
+          setHeartbeatAgents(gwData.heartbeat?.agents ?? [])
+          setGwVersion(gwData.runtimeVersion ?? '')
+        }
+      } catch {
+        // Gateway may be unreachable
+      }
+
+      setLoading(false)
     }
     load()
   }, [])
@@ -55,6 +115,8 @@ export default function DashboardPage() {
   const totalDigests = digestCounts.length
   const scriptCount = contentCounts.filter(c => c.type === 'script').length
   const publishedCount = contentCounts.filter(c => c.status === 'published').length
+  const activeSessions = sessions.filter(s => s.status === 'running')
+  const totalTokens = sessions.reduce((sum, s) => sum + s.totalTokens, 0)
 
   return (
     <div className="space-y-6">
@@ -72,13 +134,6 @@ export default function DashboardPage() {
           icon={<BookOpen className="h-5 w-5" />}
         />
         <MetricCard
-          label="Videos"
-          value="0"
-          change="Catalog ready"
-          changeType="neutral"
-          icon={<Video className="h-5 w-5" />}
-        />
-        <MetricCard
           label="Digests"
           value={loading ? '...' : String(totalDigests)}
           change={totalDigests > 0 ? `${totalDigests} total` : 'Starting soon'}
@@ -86,36 +141,71 @@ export default function DashboardPage() {
           icon={<Newspaper className="h-5 w-5" />}
         />
         <MetricCard
-          label="Scripts"
-          value={loading ? '...' : String(scriptCount)}
-          change={scriptCount > 0 ? 'In library' : 'Write your first'}
-          changeType={scriptCount > 0 ? 'positive' : 'neutral'}
-          icon={<FileText className="h-5 w-5" />}
+          label="Sessions"
+          value={loading ? '...' : String(activeSessions.length)}
+          change={activeSessions.length > 0 ? 'Active' : 'No active'}
+          changeType={activeSessions.length > 0 ? 'positive' : 'neutral'}
+          icon={<Activity className="h-5 w-5" />}
+        />
+        <MetricCard
+          label="Tokens Used"
+          value={loading ? '...' : totalTokens > 0 ? `${Math.round(totalTokens / 1000)}k` : '0'}
+          change="Across all sessions"
+          changeType="neutral"
+          icon={<Cpu className="h-5 w-5" />}
         />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* Live agents */}
         <GlassCard>
-          <div className="mb-4 flex items-center gap-2">
-            <Bot className="h-4 w-4 text-[#F59E0B]" />
-            <h3 className="text-f-lg font-semibold text-white">Agent Squad</h3>
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bot className="h-4 w-4 text-[#F59E0B]" />
+              <h3 className="text-f-lg font-semibold text-white">Agents</h3>
+            </div>
+            {gwVersion && (
+              <span className="text-f-2xs text-white/30">OpenClaw v{gwVersion}</span>
+            )}
           </div>
-          <div className="space-y-3">
-            {agentSquad.map((agent) => (
-              <div key={agent.name} className="flex items-center justify-between py-2 border-t border-white/[0.04]">
-                <div className="min-w-0">
-                  <span className="text-f-base text-white/90 font-medium">{agent.name}</span>
-                  <p className="text-f-xs text-white/50 truncate">{agent.desc}</p>
-                </div>
-                <span className="flex items-center gap-2 text-f-sm shrink-0 ml-3">
-                  <StatusDot status={agent.status} size="sm" />
-                  <span className={agent.status === 'online' ? 'text-[#22C55E]' : 'text-[#F59E0B]'}>
-                    {agent.status === 'online' ? 'Online' : 'Idle'}
-                  </span>
-                </span>
-              </div>
-            ))}
-          </div>
+
+          {heartbeatAgents.length > 0 ? (
+            <div className="space-y-3">
+              {heartbeatAgents.map((hb) => {
+                const session = sessions.find(s => s.agentId === hb.agentId)
+                const status: 'online' | 'idle' | 'offline' = session
+                  ? session.status === 'running' ? 'online' : 'idle'
+                  : 'offline'
+                return (
+                  <div key={hb.agentId} className="flex items-center justify-between py-2 border-t border-white/[0.04]">
+                    <div className="min-w-0">
+                      <span className="text-f-base text-white/90 font-medium">{hb.agentId}</span>
+                      {session && (
+                        <p className="text-f-xs text-white/40 truncate">
+                          {channelLabel(session.lastChannel || session.channel)} · {session.model}
+                        </p>
+                      )}
+                    </div>
+                    <span className="flex items-center gap-2 text-f-sm shrink-0 ml-3">
+                      <StatusDot status={status} size="sm" />
+                      <span className={
+                        status === 'online' ? 'text-[#22C55E]'
+                        : status === 'idle' ? 'text-[#F59E0B]'
+                        : 'text-white/40'
+                      }>
+                        {status === 'online' ? 'Online' : status === 'idle' ? 'Idle' : 'Offline'}
+                      </span>
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Bot className="h-10 w-10 text-white/20 mb-3" />
+              <p className="text-f-sm text-white/40">No agents configured</p>
+            </div>
+          )}
         </GlassCard>
 
         <GlassCard>
@@ -167,16 +257,32 @@ export default function DashboardPage() {
         </div>
       </GlassCard>
 
-      <GlassCard hover={false}>
-        <div className="flex items-center gap-2 mb-4">
-          <Clock className="h-4 w-4 text-white/40" />
-          <h3 className="text-f-lg font-semibold text-white">Recent Activity</h3>
-        </div>
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <p className="text-f-base text-white/40">No activity yet</p>
-          <p className="text-f-sm text-white/25 mt-1">Start by adding content or cataloging videos</p>
-        </div>
-      </GlassCard>
+      {/* Recent Sessions */}
+      {sessions.length > 0 && (
+        <GlassCard hover={false}>
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="h-4 w-4 text-white/40" />
+            <h3 className="text-f-lg font-semibold text-white">Recent Sessions</h3>
+          </div>
+          <div className="space-y-2">
+            {sessions.slice(0, 5).map((session) => {
+              const status: 'online' | 'idle' | 'offline' = session.status === 'running' ? 'online' : 'idle'
+              return (
+                <div key={session.key} className="flex items-center justify-between py-2 border-t border-white/[0.04]">
+                  <div className="min-w-0">
+                    <span className="text-f-base text-white/90 font-medium">{session.agentId}</span>
+                    <p className="text-f-xs text-white/40">{channelLabel(session.lastChannel || session.channel)} · {session.model}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 ml-3">
+                    <span className="text-f-xs text-white/30">{formatAge(Date.now() - session.updatedAt)}</span>
+                    <StatusDot status={status} size="sm" />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </GlassCard>
+      )}
     </div>
   )
 }
