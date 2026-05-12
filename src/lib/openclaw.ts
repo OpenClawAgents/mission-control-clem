@@ -126,17 +126,12 @@ export async function searchMemory(query: string) {
   return invokeTool('memory_search', 'json', { query }) as Promise<unknown>
 }
 
-/** Get gateway status via CLI */
-export async function getGatewayStatus(): Promise<{
-  overview: Record<string, string>
-  channels: Array<{ channel: string; enabled: boolean; state: string; detail: string }>
-  sessions: Array<{ key: string; kind: string; age: string; model: string; runtime: string; tokens: string }>
-}> {
+/** Get gateway status via CLI — returns raw JSON from `openclaw status --json` */
+export async function getGatewayStatus(): Promise<Record<string, unknown>> {
   const raw = await runCLI(['status', '--json'])
   try {
     return JSON.parse(raw)
   } catch {
-    // Fallback: parse the human-readable output
     throw new Error('Could not parse gateway status')
   }
 }
