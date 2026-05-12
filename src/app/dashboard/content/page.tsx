@@ -1,9 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { PageHeader, GlassCard, EmptyState, MetricCard } from '@/components/ds'
 import { BookOpen, Plus, FileText, Sparkles, Newspaper, Hash, Mail, PenTool, Share2, Search, Clapperboard } from 'lucide-react'
-import { getContent, getContentCounts, type ContentItem, type ContentType, type ContentStatus } from '@/lib/api'
+import { getContent, getContentCounts, createContent, type ContentItem, type ContentType, type ContentStatus } from '@/lib/api'
+import { getCurrentUserId } from '@/lib/api/auth'
+import { ContentForm } from '@/components/forms/content-form'
 
 const contentTypeConfig: Record<ContentType, { icon: typeof Mail; desc: string }> = {
   newsletter: { icon: Mail, desc: 'Email newsletters & bulletins' },
@@ -15,39 +18,61 @@ const contentTypeConfig: Record<ContentType, { icon: typeof Mail; desc: string }
   draft: { icon: FileText, desc: 'Unfinished work' },
 }
 
-const contentStatuses: { label: string; color: string }[] = [
-  { label: 'Draft', color: 'bg-[#F59E0B]/20 text-[#F59E0B]' },
-  { label: 'Review', color: 'bg-purple-500/20 text-purple-400' },
-  { label: 'Published', color: 'bg-[#22C55E]/20 text-[#22C55E]' },
-  { label: 'Archived', color: 'bg-white/10 text-white/50' },
+const contentStatuses: { label: string; value: string; color: string }[] = [
+  { label: 'Draft', value: 'draft', color: 'bg-[#F59E0B]/20 text-[#F59E0B]' },
+  { label: 'Review', value: 'review', color: 'bg-purple-500/20 text-purple-400' },
+  { label: 'Published', value: 'published', color: 'bg-[#22C55E]/20 text-[#22C55E]' },
+  { label: 'Archived', value: 'archived', color: 'bg-white/10 text-white/50' },
 ]
 
 export default function ContentPage() {
   const [items, setItems] = useState<ContentItem[]>([])
   const [counts, setCounts] = useState<{ type: ContentType; status: ContentStatus }[]>([])
   const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [contentData, countData] = await Promise.all([getContent(), getContentCounts()])
-        setItems(contentData)
-        setCounts(countData)
-      } catch {
-        // Auth or empty table is fine
-      } finally {
-        setLoading(false)
-      }
+  const loadData = async () => {
+    try {
+      const [contentData, countData] = await Promise.all([getContent(), getContentCounts()])
+      setItems(contentData)
+      setCounts(countData)
+    } catch {
+      // Auth or empty table is fine
+    } finally {
+      setLoading(false)
     }
-    load()
-  }, [])
+  }
+
+  useEffect(() => { loadData() }, [])
 
   const totalItems = counts.length
   const scriptCount = counts.filter(c => c.type === 'script').length
   const publishedCount = counts.filter(c => c.status === 'published').length
-
   const countsByType = (type: ContentType) => counts.filter(c => c.type === type).length
   const countsByStatus = (status: string) => counts.filter(c => c.status === status).length
+
+  const handleCreate = async (data: {
+    title: string
+    type: ContentType
+    status: ContentStatus
+    tags: string[]
+    source_url: string
+    body: Record<string, unknown>
+  }) => {
+    const userId = await getCurrentUserId()
+
+    await createContent({
+      user_id: userId,
+      title: data.title,
+      type: data.type,
+      status: data.status,
+      tags: data.tags,
+      source_url: data.source_url || null,
+      body: data.body,
+    })
+    toast.success('Content added to library')
+    await loadData()
+  }
 
   return (
     <div className="space-y-6">
@@ -55,12 +80,14 @@ export default function ContentPage() {
         title="Content Library"
         subtitle="Newsletters, scripts, research, and social assets — always query the library first"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
+          <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
             <Plus className="h-4 w-4" />
             Add Content
           </button>
         }
       />
+
+      <ContentForm open={showForm} onClose={() => setShowForm(false)} onSubmit={handleCreate} />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
@@ -123,11 +150,11 @@ export default function ContentPage() {
         </div>
         <div className="flex flex-wrap gap-3">
           {contentStatuses.map((cs) => (
-            <div key={cs.label} className="flex items-center gap-2 px-4 py-2 rounded-[10px] border border-white/[0.06] bg-white/[0.02]">
+            <div key={cs.value} className="flex items-center gap-2 px-4 py-2 rounded-[10px] border border-white/[0.06] bg-white/[0.02]">
               <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-f-xs font-medium ${cs.color}`}>
                 {cs.label}
               </span>
-              <span className="text-f-base text-white/80">{countsByStatus(cs.label.toLowerCase())}</span>
+              <span className="text-f-base text-white/80">{countsByStatus(cs.value)}</span>
             </div>
           ))}
         </div>
@@ -165,7 +192,7 @@ export default function ContentPage() {
             title="No content yet"
             description="Add newsletters, scripts, research docs, and social media assets to your library. Always query the library before generating new content."
             action={
-              <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
+              <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
                 <Plus className="h-4 w-4" />
                 Add Your First Item
               </button>

@@ -71,7 +71,7 @@ export async function getContentById(id: string) {
   return data as ContentItem
 }
 
-export async function createContent(item: Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>) {
+export async function createContent(item: Partial<ContentItem> & { user_id: string; title: string; type: ContentType }) {
   const { data, error } = await supabase.from('content').insert(item).select().single()
   if (error) throw error
   return data as ContentItem
@@ -104,7 +104,7 @@ export async function getVideos() {
   return data as Video[]
 }
 
-export async function createVideo(video: Omit<Video, 'id' | 'created_at' | 'updated_at'>) {
+export async function createVideo(video: Partial<Video> & { user_id: string; title: string }) {
   const { data, error } = await supabase.from('videos').insert(video).select().single()
   if (error) throw error
   return data as Video
@@ -133,7 +133,7 @@ export async function getDigests(filters?: { category?: DigestCategory }) {
   return data as Digest[]
 }
 
-export async function createDigest(digest: Omit<Digest, 'id' | 'created_at'>) {
+export async function createDigest(digest: Partial<Digest> & { user_id: string; title: string; date: string; category: DigestCategory; summary: string }) {
   const { data, error } = await supabase.from('digests').insert(digest).select().single()
   if (error) throw error
   return data as Digest

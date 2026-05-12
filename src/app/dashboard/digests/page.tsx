@@ -1,9 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { PageHeader, GlassCard, EmptyState, MetricCard, StatusDot } from '@/components/ds'
 import { Newspaper, Plus, Scale, Church, Shield, MapPin } from 'lucide-react'
-import { getDigests, getDigestCounts, type Digest, type DigestCategory } from '@/lib/api'
+import { getDigests, getDigestCounts, createDigest, type Digest, type DigestCategory } from '@/lib/api'
+import { getCurrentUserId } from '@/lib/api/auth'
+import { DigestForm } from '@/components/forms/digest-form'
 
 const categoryConfig: Record<DigestCategory, { icon: typeof Scale; label: string; color: string }> = {
   psychedelic_law: { icon: Scale, label: 'Psychedelic Law', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
@@ -26,23 +29,46 @@ export default function DigestsPage() {
   const [digests, setDigests] = useState<Digest[]>([])
   const [counts, setCounts] = useState<{ category: string }[]>([])
   const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [digestData, countData] = await Promise.all([getDigests(), getDigestCounts()])
-        setDigests(digestData)
-        setCounts(countData)
-      } catch {
-        // Auth or empty table is fine
-      } finally {
-        setLoading(false)
-      }
+  const loadData = async () => {
+    try {
+      const [digestData, countData] = await Promise.all([getDigests(), getDigestCounts()])
+      setDigests(digestData)
+      setCounts(countData)
+    } catch {
+      // Auth or empty table is fine
+    } finally {
+      setLoading(false)
     }
-    load()
-  }, [])
+  }
+
+  useEffect(() => { loadData() }, [])
 
   const catCount = (cat: string) => counts.filter(c => c.category === cat).length
+
+  const handleCreate = async (data: {
+    title: string
+    date: string
+    category: DigestCategory
+    summary: string
+    source_url: string
+    source_name: string
+  }) => {
+    const userId = await getCurrentUserId()
+
+    await createDigest({
+      user_id: userId,
+      title: data.title,
+      date: data.date,
+      category: data.category,
+      summary: data.summary,
+      source_url: data.source_url || null,
+      source_name: data.source_name || null,
+    })
+    toast.success('Digest created')
+    await loadData()
+  }
 
   return (
     <div className="space-y-6">
@@ -50,40 +76,20 @@ export default function DigestsPage() {
         title="Digests"
         subtitle="Psychedelic law, church news, and policy updates — fresh before stale"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
+          <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
             <Plus className="h-4 w-4" />
             New Digest
           </button>
         }
       />
 
+      <DigestForm open={showForm} onClose={() => setShowForm(false)} onSubmit={handleCreate} />
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          label="Total Digests"
-          value={loading ? '...' : String(digests.length)}
-          icon={<Newspaper className="h-5 w-5" />}
-        />
-        <MetricCard
-          label="Psychedelic Law"
-          value={loading ? '...' : String(catCount('psychedelic_law'))}
-          change={catCount('psychedelic_law') > 0 ? 'Tracked' : 'Starting soon'}
-          changeType={catCount('psychedelic_law') > 0 ? 'positive' : 'neutral'}
-          icon={<Scale className="h-5 w-5" />}
-        />
-        <MetricCard
-          label="Church"
-          value={loading ? '...' : String(catCount('church'))}
-          change={catCount('church') > 0 ? 'Tracked' : 'Starting soon'}
-          changeType={catCount('church') > 0 ? 'positive' : 'neutral'}
-          icon={<Church className="h-5 w-5" />}
-        />
-        <MetricCard
-          label="DEA"
-          value={loading ? '...' : String(catCount('dea'))}
-          change={catCount('dea') > 0 ? 'Tracked' : 'Starting soon'}
-          changeType={catCount('dea') > 0 ? 'positive' : 'neutral'}
-          icon={<Shield className="h-5 w-5" />}
-        />
+        <MetricCard label="Total Digests" value={loading ? '...' : String(digests.length)} icon={<Newspaper className="h-5 w-5" />} />
+        <MetricCard label="Psychedelic Law" value={loading ? '...' : String(catCount('psychedelic_law'))} change={catCount('psychedelic_law') > 0 ? 'Tracked' : 'Starting soon'} changeType={catCount('psychedelic_law') > 0 ? 'positive' : 'neutral'} icon={<Scale className="h-5 w-5" />} />
+        <MetricCard label="Church" value={loading ? '...' : String(catCount('church'))} change={catCount('church') > 0 ? 'Tracked' : 'Starting soon'} changeType={catCount('church') > 0 ? 'positive' : 'neutral'} icon={<Church className="h-5 w-5" />} />
+        <MetricCard label="DEA" value={loading ? '...' : String(catCount('dea'))} change={catCount('dea') > 0 ? 'Tracked' : 'Starting soon'} changeType={catCount('dea') > 0 ? 'positive' : 'neutral'} icon={<Shield className="h-5 w-5" />} />
       </div>
 
       <GlassCard hover={false}>
@@ -135,7 +141,7 @@ export default function DigestsPage() {
                 <div key={digest.id} className="flex items-center justify-between py-3 px-4 rounded-[10px] border border-white/[0.04] hover:bg-white/[0.03] transition-all">
                   <div className="min-w-0 flex-1">
                     <p className="text-f-base text-white/90 font-medium truncate">{digest.title}</p>
-                    <p className="text-f-xs text-white/40 mt-0.5">{new Date(digest.date).toLocaleDateString()} · {cat?.label || digest.category}</p>
+                    <p className="text-f-xs text-white/40 mt-0.5">{new Date(digest.date).toLocaleDateString()}</p>
                   </div>
                   <span className={`ml-3 shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-f-xs font-medium ${cat?.color || 'bg-white/10 text-white/50'}`}>
                     {cat?.label || digest.category}
@@ -152,7 +158,7 @@ export default function DigestsPage() {
             title="No digests yet"
             description="Track DEA scheduling changes, Church of Singularism rulings, state-level reform, and more. Fresh digest before stale summary."
             action={
-              <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
+              <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
                 <Plus className="h-4 w-4" />
                 Create First Digest
               </button>
