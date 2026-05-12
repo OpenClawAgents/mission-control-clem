@@ -14,6 +14,7 @@ import {
   Menu,
   Zap,
   Play,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -57,6 +58,7 @@ const sections: NavSection[] = [
     title: 'Operations',
     items: [
       { label: 'Agents', href: '/dashboard/agents', icon: Bot },
+      { label: 'Skills', href: '/dashboard/skills', icon: Sparkles },
       { label: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
       { label: 'Automation', href: '/dashboard/automation', icon: Zap },
     ],
