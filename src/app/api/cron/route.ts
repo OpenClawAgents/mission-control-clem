@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { listCronJobs, runCronJob, setJobEnabled } from '@/lib/openclaw'
+import { listCronJobs, runCronJob, setJobEnabled, deleteCronJob } from '@/lib/openclaw'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,7 +30,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, action: 'setEnabled', jobId, enabled })
     }
 
-    return NextResponse.json({ ok: false, error: 'Invalid action. Use: run, setEnabled' }, { status: 400 })
+    if (action === 'remove' && jobId) {
+      await deleteCronJob(jobId)
+      return NextResponse.json({ ok: true, action: 'remove', jobId })
+    }
+
+    return NextResponse.json({ ok: false, error: 'Invalid action. Use: run, setEnabled, remove' }, { status: 400 })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to perform cron action'
     return NextResponse.json({ ok: false, error: message }, { status: 500 })
