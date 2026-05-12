@@ -67,6 +67,7 @@ const sections: NavSection[] = [
     title: 'System',
     items: [
       { label: 'Settings', href: '/dashboard/settings', icon: Settings },
+      { label: 'Docs', href: '/dashboard/docs', icon: BookOpen },
     ],
   },
 ]
