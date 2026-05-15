@@ -4,14 +4,15 @@ import { listAgents, listCronJobs, listSessions } from '@/lib/openclaw'
 export const dynamic = 'force-dynamic'
 
 // Known agents — used as fallback when CLI is unavailable (e.g., on Vercel)
+// The frontend maps agentId to Lucide icons, so emoji is just a fallback display label
 const KNOWN_AGENTS = [
-  { agentId: 'main', name: 'Clem', emoji: '🦞' },
-  { agentId: 'content-strategist', name: 'Content Strategist', emoji: '📝' },
-  { agentId: 'research-scout', name: 'Research Scout', emoji: '🔍' },
-  { agentId: 'script-writer', name: 'Script Writer', emoji: '🎬' },
-  { agentId: 'digest-compiler', name: 'Digest Compiler', emoji: '📰' },
-  { agentId: 'video-cataloger', name: 'Video Cataloger', emoji: '🎥' },
-  { agentId: 'library-indexer', name: 'Library Indexer', emoji: '📚' },
+  { agentId: 'main', name: 'Clem', emoji: 'Clem' },
+  { agentId: 'content-strategist', name: 'Content Strategist', emoji: 'CS' },
+  { agentId: 'research-scout', name: 'Research Scout', emoji: 'RS' },
+  { agentId: 'script-writer', name: 'Script Writer', emoji: 'SW' },
+  { agentId: 'digest-compiler', name: 'Digest Compiler', emoji: 'DC' },
+  { agentId: 'video-cataloger', name: 'Video Cataloger', emoji: 'VC' },
+  { agentId: 'library-indexer', name: 'Library Indexer', emoji: 'LI' },
 ]
 
 export async function GET() {

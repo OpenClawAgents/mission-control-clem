@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, MetricCard, EmptyState, StatusDot } from '@/components/ds'
-import { TrendingUp, Hash, Music, Users, Flame, ExternalLink, Sparkles, RefreshCw, Plus } from 'lucide-react'
+import { TrendingUp, Hash, Music, Users, Flame, ExternalLink, Sparkles, RefreshCw, Plus, BarChart3, ArrowUpRight } from 'lucide-react'
 import { CreateModal } from '@/components/create-modal'
 
 interface TrendItem {
@@ -246,7 +246,7 @@ export default function TrendingPage() {
                           )}
                           {item.trend_score && (
                             <span className="text-f-xs text-[#F59E0B]">
-                              {item.trend_score > 80 ? '🔥' : item.trend_score > 50 ? '📈' : '📊'} {item.trend_score}
+                              {item.trend_score > 80 ? <Flame className="h-3.5 w-3.5" /> : item.trend_score > 50 ? <ArrowUpRight className="h-3.5 w-3.5" /> : <BarChart3 className="h-3.5 w-3.5" />} {item.trend_score}
                             </span>
                           )}
                           {item.url && (

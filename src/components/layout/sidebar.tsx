@@ -21,6 +21,7 @@ import {
   Repeat,
   ScrollText,
   LogOut,
+  Clapperboard,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -210,7 +211,7 @@ export function Sidebar() {
         ) : (
           <Link href="/dashboard" className="mx-auto cursor-pointer">
             <div className="mc-bubble flex h-10 w-10 items-center justify-center rounded-[10px]">
-              <span className="mc-text-gradient text-f-xl font-bold">🎬</span>
+              <span className="mc-text-gradient text-f-xl font-bold"><Clapperboard className="h-5 w-5" /></span>
             </div>
           </Link>
         )}

@@ -2,7 +2,31 @@
 
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, StatusDot } from '@/components/ds'
-import { Bot, Clock, Sparkles, ChevronRight } from 'lucide-react'
+import {
+  Bot,
+  Clock,
+  Sparkles,
+  ChevronRight,
+  Shield,
+  Search,
+  Lightbulb,
+  PenTool,
+  Newspaper,
+  Video,
+  BookOpen,
+  Activity,
+  Zap,
+  BarChart3,
+  PlayCircle,
+  PauseCircle,
+  Timer,
+  Cpu,
+  MessageSquare,
+  ArrowRight,
+  ArrowDownToLine as InputIcon,
+  Workflow,
+  ArrowUpFromLine as OutputIcon,
+} from 'lucide-react'
 
 interface AgentCron {
   id: string
@@ -25,7 +49,18 @@ interface AgentData {
   activeSessions: number
 }
 
-// Skill metadata — descriptions and categories keyed by agentId
+// Lucide icon map — each agent gets a unique icon
+const AGENT_ICONS: Record<string, { icon: typeof Bot; color: string }> = {
+  main: { icon: Shield, color: '#F59E0B' },
+  'content-strategist': { icon: Lightbulb, color: '#A855F7' },
+  'research-scout': { icon: Search, color: '#3B82F6' },
+  'script-writer': { icon: PenTool, color: '#EC4899' },
+  'digest-compiler': { icon: Newspaper, color: '#22C55E' },
+  'video-cataloger': { icon: Video, color: '#06B6D4' },
+  'library-indexer': { icon: BookOpen, color: '#8B5CF6' },
+}
+
+// Skill metadata keyed by agentId
 const SKILL_META: Record<string, { desc: string; category: 'content' | 'research' | 'operations' | 'automation'; skills: string[] }> = {
   main: {
     desc: 'Mission Control orchestrator — coordinates all agents, manages the dashboard, and runs system tasks',
@@ -64,11 +99,11 @@ const SKILL_META: Record<string, { desc: string; category: 'content' | 'research
   },
 }
 
-const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
-  content: { label: 'Content', color: '#F59E0B' },
-  research: { label: 'Research', color: '#A855F7' },
-  operations: { label: 'Operations', color: '#22C55E' },
-  automation: { label: 'Automation', color: '#3B82F6' },
+const CATEGORY_CONFIG: Record<string, { label: string; color: string; icon: typeof Bot }> = {
+  content: { label: 'Content', color: '#A855F7', icon: Lightbulb },
+  research: { label: 'Research', color: '#3B82F6', icon: Search },
+  operations: { label: 'Operations', color: '#22C55E', icon: Activity },
+  automation: { label: 'Automation', color: '#F59E0B', icon: Zap },
 }
 
 function formatCronSchedule(schedule: AgentCron['schedule']): string {
@@ -147,47 +182,52 @@ export default function SkillsPage() {
         </GlassCard>
       ) : (
         <div className="space-y-8">
-          {categories.map(({ key, label, color, agents: catAgents }) => (
+          {categories.map(({ key, label, color, icon: CatIcon, agents: catAgents }) => (
             <div key={key}>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
-                <h2 className="text-f-base font-semibold text-white">{label}</h2>
-                <span className="text-f-xs text-white/30">{catAgents.length} agent{catAgents.length !== 1 ? 's' : ''}</span>
+              {/* Category header */}
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="h-7 w-7 rounded-[8px] flex items-center justify-center border" style={{ backgroundColor: `${color}10`, borderColor: `${color}20` }}>
+                  <CatIcon className="h-4 w-4" style={{ color }} />
+                </div>
+                <h2 className="text-f-lg font-semibold text-white">{label}</h2>
+                <span className="text-f-xs text-white/30 ml-1">{catAgents.length} agent{catAgents.length !== 1 ? 's' : ''}</span>
               </div>
 
               <div className="space-y-3">
                 {catAgents.map((agent) => {
-                  const meta = SKILL_META[agent.agentId] || { desc: agent.agentId, skills: [] }
+                  const meta = SKILL_META[agent.agentId] || { desc: agent.agentId, skills: [], category: 'other' }
+                  const iconConfig = AGENT_ICONS[agent.agentId] || { icon: Bot, color: '#6B7280' }
+                  const AgentIcon = iconConfig.icon
                   const isExpanded = expandedAgent === agent.agentId
                   const status = statusConfig[agent.status]
+                  const enabledCrons = agent.cronJobs.filter(j => j.enabled)
 
                   return (
-                    <GlassCard key={agent.agentId}>
+                    <GlassCard key={agent.agentId} className={isExpanded ? 'ring-1 ring-white/10' : undefined}>
                       <button
                         className="w-full flex items-center justify-between"
                         onClick={() => setExpandedAgent(isExpanded ? null : agent.agentId)}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center gap-3.5 min-w-0">
                           <div
-                            className="h-10 w-10 rounded-[10px] flex items-center justify-center border shrink-0"
-                            style={{ backgroundColor: `${status.color}10`, borderColor: `${status.color}20` }}
+                            className="h-11 w-11 rounded-[10px] flex items-center justify-center border shrink-0"
+                            style={{ backgroundColor: `${iconConfig.color}10`, borderColor: `${iconConfig.color}20` }}
                           >
-                            {agent.emoji ? (
-                              <span className="text-f-lg">{agent.emoji}</span>
-                            ) : (
-                              <Bot className="h-5 w-5" style={{ color: status.color }} />
-                            )}
+                            <AgentIcon className="h-5 w-5" style={{ color: iconConfig.color }} />
                           </div>
                           <div className="min-w-0 text-left">
-                            <div className="text-f-base text-white font-medium truncate">{agent.name || agent.agentId}</div>
-                            <div className="flex items-center gap-2 text-f-xs">
-                              <span className="flex items-center gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-f-base text-white font-semibold truncate">{agent.name || agent.agentId}</span>
+                              <span className="flex items-center gap-1 text-f-2xs">
                                 <StatusDot status={agent.status} size="sm" />
                                 <span style={{ color: status.color }}>{status.label}</span>
                               </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-f-xs text-white/35 mt-0.5">
                               {agent.cronJobs.length > 0 && (
-                                <span className="text-white/25">· {agent.cronJobs.length} task{agent.cronJobs.length !== 1 ? 's' : ''}</span>
+                                <span>{enabledCrons.length}/{agent.cronJobs.length} tasks</span>
                               )}
+                              {agent.model && <span>{agent.model}</span>}
                             </div>
                           </div>
                         </div>
@@ -195,37 +235,45 @@ export default function SkillsPage() {
                       </button>
 
                       {isExpanded && (
-                        <div className="mt-4 pt-4 border-t border-white/[0.06] space-y-4">
+                        <div className="mt-4 pt-4 border-t border-white/[0.06] space-y-5">
                           {/* Description */}
                           <p className="text-f-sm text-white/60">{meta.desc}</p>
 
                           {/* Skills */}
-                          <div className="flex flex-wrap gap-1.5">
-                            {meta.skills.map((skill) => (
-                              <span key={skill} className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 text-f-2xs text-white/50">
-                                {skill}
-                              </span>
-                            ))}
+                          <div>
+                            <div className="text-f-xs text-white/40 font-medium uppercase tracking-wider mb-2">Capabilities</div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {meta.skills.map((skill) => (
+                                <span key={skill} className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/[0.06] px-2.5 py-1 text-f-xs text-white/50">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
                           </div>
 
                           {/* Pipeline */}
                           <div>
                             <div className="text-f-xs text-white/40 font-medium uppercase tracking-wider mb-2">Pipeline</div>
-                            <div className="flex items-center gap-1.5 flex-wrap">
+                            <div className="flex items-center gap-2">
                               {[
-                                { label: 'Input', color: '#3B82F6' },
-                                { label: 'Process', color: '#A855F7' },
-                                { label: 'Output', color: '#22C55E' },
-                              ].map((stage, i) => (
-                                <span
-                                  key={stage.label}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-f-xs font-medium border"
-                                  style={{ backgroundColor: `${stage.color}10`, borderColor: `${stage.color}20`, color: stage.color }}
-                                >
-                                  {stage.label}
-                                  {i < 2 && <span className="text-white/20">→</span>}
-                                </span>
-                              ))}
+                                { label: 'Input', color: '#3B82F6', icon: InputIcon },
+                                { label: 'Process', color: '#A855F7', icon: Workflow },
+                                { label: 'Output', color: '#22C55E', icon: OutputIcon },
+                              ].map((stage, i) => {
+                                const StageIcon = stage.icon
+                                return (
+                                  <div key={stage.label} className="flex items-center gap-2">
+                                    <span
+                                      className="inline-flex items-center gap-2 px-3 py-2 rounded-[10px] text-f-sm font-medium border"
+                                      style={{ backgroundColor: `${stage.color}10`, borderColor: `${stage.color}20`, color: stage.color }}
+                                    >
+                                      <StageIcon className="h-3.5 w-3.5" />
+                                      {stage.label}
+                                    </span>
+                                    {i < 2 && <ArrowRight className="h-3 w-3 text-white/20" />}
+                                  </div>
+                                )
+                              })}
                             </div>
                           </div>
 
@@ -233,19 +281,29 @@ export default function SkillsPage() {
                           {agent.cronJobs.length > 0 && (
                             <div>
                               <div className="text-f-xs text-white/40 font-medium uppercase tracking-wider mb-2">Scheduled Tasks</div>
-                              <div className="space-y-2">
+                              <div className="space-y-1">
                                 {agent.cronJobs.map((job) => (
-                                  <div key={job.id} className="flex items-center justify-between gap-2 py-2 border-t border-white/[0.04] last:border-0">
-                                    <div className="min-w-0">
-                                      <div className="text-f-sm text-white/80 font-medium">{job.name}</div>
-                                      <div className="text-f-xs text-white/40">{formatCronSchedule(job.schedule)}</div>
+                                  <div key={job.id} className="flex items-center justify-between gap-3 py-2.5 px-3 rounded-[8px] bg-white/[0.02] border border-white/[0.04]">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                      {job.enabled ? (
+                                        <PlayCircle className="h-4 w-4 text-[#22C55E] shrink-0" />
+                                      ) : (
+                                        <PauseCircle className="h-4 w-4 text-white/20 shrink-0" />
+                                      )}
+                                      <div className="min-w-0">
+                                        <div className="text-f-sm text-white/80 font-medium">{job.name}</div>
+                                        <div className="text-f-xs text-white/35 flex items-center gap-1.5">
+                                          <Timer className="h-3 w-3" />
+                                          {formatCronSchedule(job.schedule)}
+                                        </div>
+                                      </div>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
                                       {!job.enabled && (
-                                        <span className="text-f-2xs text-white/30">Disabled</span>
+                                        <span className="text-f-2xs text-white/30">Paused</span>
                                       )}
                                       {job.lastRunStatus === 'error' && (
-                                        <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-f-2xs bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20">error</span>
+                                        <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-f-2-xs bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20">error</span>
                                       )}
                                       {job.lastRunStatus === 'success' && (
                                         <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-f-2-xs bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20">ok</span>
