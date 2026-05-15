@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { PageHeader, GlassCard, EmptyState, MetricCard, StatusDot } from '@/components/ds'
+import { PageHeader, GlassCard, EmptyState, MetricCard, StatusDot, ListItem, ListItemTitle, ListItemMeta, ListItemSubtitle } from '@/components/ds'
 import { Newspaper, Plus, ExternalLink, Calendar, Tag } from 'lucide-react'
 import { getDigests, type Digest, type DigestCategory } from '@/lib/api'
 import { CreateModal } from '@/components/create-modal'
@@ -149,58 +149,56 @@ export default function DigestsPage() {
           />
         </GlassCard>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {digests.map((digest) => {
             const config = categoryConfig[digest.category] || categoryConfig.other
             return (
-              <GlassCard key={digest.id} className="relative overflow-hidden">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span
-                        className="inline-flex items-center rounded-full px-2 py-0.5 text-f-2xs font-medium border"
-                        style={{
-                          backgroundColor: `${config.color}10`,
-                          borderColor: `${config.color}20`,
-                          color: config.color,
-                        }}
-                      >
-                        {config.label}
+              <ListItem
+                key={digest.id}
+                accentColor={config.color}
+                icon={<Newspaper className="h-4 w-4" style={{ color: config.color }} />}
+              >
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-flex items-center rounded-full px-2 py-0.5 text-f-2xs font-medium border"
+                      style={{ backgroundColor: `${config.color}10`, borderColor: `${config.color}20`, color: config.color }}
+                    >
+                      {config.label}
+                    </span>
+                    {digest.is_sent && (
+                      <span className="inline-flex items-center gap-1 text-f-2xs text-[#22C55E]">
+                        <StatusDot status="online" size="sm" />
+                        Sent
                       </span>
-                      {digest.is_sent && (
-                        <span className="inline-flex items-center gap-1 text-f-2xs text-[#22C55E]">
-                          <StatusDot status="online" size="sm" />
-                          Sent
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="text-f-base font-semibold text-white/90">{digest.title}</h3>
-                    <p className="text-f-sm text-white/50 mt-1 line-clamp-2">{digest.summary}</p>
-                    <div className="flex items-center gap-3 mt-2 text-f-xs text-white/30">
-                      <span className="inline-flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(digest.date).toLocaleDateString()}
-                      </span>
-                      {digest.source_name && (
-                        <span className="inline-flex items-center gap-1">
-                          <Tag className="h-3 w-3" />
-                          {digest.source_name}
-                        </span>
-                      )}
-                    </div>
+                    )}
                   </div>
                   {digest.source_url && (
                     <a
                       href={digest.source_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="shrink-0 h-8 w-8 rounded-[8px] flex items-center justify-center bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/[0.1] transition-all"
+                      className="shrink-0 h-7 w-7 rounded-[6px] flex items-center justify-center bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/[0.1] transition-all"
                     >
-                      <ExternalLink className="h-3.5 w-3.5 text-white/40" />
+                      <ExternalLink className="h-3 w-3 text-white/40" />
                     </a>
                   )}
                 </div>
-              </GlassCard>
+                <ListItemTitle>{digest.title}</ListItemTitle>
+                <ListItemSubtitle>{digest.summary}</ListItemSubtitle>
+                <ListItemMeta>
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {new Date(digest.date).toLocaleDateString()}
+                  </span>
+                  {digest.source_name && (
+                    <span className="inline-flex items-center gap-1">
+                      <Tag className="h-3 w-3" />
+                      {digest.source_name}
+                    </span>
+                  )}
+                </ListItemMeta>
+              </ListItem>
             )
           })}
         </div>

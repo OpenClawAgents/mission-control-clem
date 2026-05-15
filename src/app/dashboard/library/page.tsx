@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { PageHeader, GlassCard, MetricCard } from '@/components/ds'
+import { PageHeader, GlassCard, MetricCard, ListItem, ListItemTitle, ListItemMeta } from '@/components/ds'
 import { CreateModal } from '@/components/create-modal'
 import { BookOpen, Search, Tag, FileText, Newspaper, Mail, Video, PenTool, Share2, Upload, Sparkles } from 'lucide-react'
 import { getContent, type ContentItem, type ContentType, type ContentStatus } from '@/lib/api'
@@ -278,7 +278,7 @@ export default function LibraryPage() {
         ) : displayedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <BookOpen className="h-12 w-12 text-white/20 mb-4" />
-            <h3 className="text-f-lg font-semibold text-white/80">
+            <h3 className="text-f-lg font-semibold text-white">
               {items.length === 0 ? 'Your library is empty' : 'No matching items'}
             </h3>
             <p className="mt-2 text-f-base text-white/50 max-w-md">
@@ -293,35 +293,30 @@ export default function LibraryPage() {
               const config = typeConfig[item.type] || typeConfig.draft
               const Icon = config.icon
               return (
-                <div
+                <ListItem
                   key={item.id}
-                  className="flex items-center gap-3 py-3 px-3 rounded-[10px] bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] hover:border-white/[0.08] transition-all group cursor-pointer"
+                  accentColor={config.color}
+                  icon={<Icon className="h-4 w-4" style={{ color: config.color }} />}
                 >
-                  <div
-                    className="h-8 w-8 rounded-[8px] flex items-center justify-center shrink-0 border"
-                    style={{ backgroundColor: `${config.color}10`, borderColor: `${config.color}20` }}
-                  >
-                    <Icon className="h-4 w-4" style={{ color: config.color }} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-f-base text-white/90 font-medium truncate">{item.title}</div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-f-xs text-white/40">{config.label}</span>
-                      {item.tags && item.tags.length > 0 && (
-                        <span className="text-f-xs text-white/25">
-                          {item.tags.slice(0, 3).join(' · ')}
-                          {item.tags.length > 3 && ` +${item.tags.length - 3}`}
-                        </span>
-                      )}
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <ListItemTitle>{item.title}</ListItemTitle>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-f-2xs font-medium ${statusColors[item.status]}`}>
+                        {item.status}
+                      </span>
+                      <span className="text-f-xs text-white/25 group-hover:text-white/40 transition-colors">→</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-f-2xs font-medium ${statusColors[item.status]}`}>
-                      {item.status}
-                    </span>
-                    <span className="text-f-xs text-white/25 group-hover:text-white/40 transition-colors">→</span>
-                  </div>
-                </div>
+                  <ListItemMeta>
+                    <span className="text-f-xs text-white/40">{config.label}</span>
+                    {item.tags && item.tags.length > 0 && (
+                      <span className="text-f-xs text-white/25">
+                        {item.tags.slice(0, 3).join(' · ')}
+                        {item.tags.length > 3 && ` +${item.tags.length - 3}`}
+                      </span>
+                    )}
+                  </ListItemMeta>
+                </ListItem>
               )
             })}
           </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { PageHeader, GlassCard, EmptyState, MetricCard } from '@/components/ds'
+import { PageHeader, GlassCard, EmptyState, MetricCard, ListItem, ListItemTitle, ListItemMeta } from '@/components/ds'
 import { Archive, Plus, Search, Mail, PenTool, Share2, FileText, Tag, Video, FolderOpen, ScrollText } from 'lucide-react'
 import { getContent, type ContentItem, type ContentType, type ContentStatus } from '@/lib/api'
 import { CreateModal } from '@/components/create-modal'
@@ -189,31 +189,26 @@ export default function ContentPage() {
               const config = typeConfig[item.type] || typeConfig.draft
               const Icon = config.icon
               return (
-                <div
+                <ListItem
                   key={item.id}
-                  className="flex items-center gap-3 py-3 px-3 rounded-[10px] bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] hover:border-white/[0.08] transition-all group cursor-pointer"
+                  accentColor={config.color}
+                  icon={<Icon className="h-4 w-4" style={{ color: config.color }} />}
                 >
-                  <div
-                    className="h-8 w-8 rounded-[8px] flex items-center justify-center shrink-0 border"
-                    style={{ backgroundColor: `${config.color}10`, borderColor: `${config.color}20` }}
-                  >
-                    <Icon className="h-4 w-4" style={{ color: config.color }} />
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <ListItemTitle>{item.title}</ListItemTitle>
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-f-2xs font-medium shrink-0 ${statusColors[item.status]}`}>
+                      {item.status}
+                    </span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-f-base text-white/90 font-medium truncate">{item.title}</div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-f-xs text-white/40">{config.label}</span>
-                      {item.tags && item.tags.length > 0 && (
-                        <span className="text-f-xs text-white/25">
-                          {item.tags.slice(0, 3).join(' · ')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-f-2xs font-medium ${statusColors[item.status]}`}>
-                    {item.status}
-                  </span>
-                </div>
+                  <ListItemMeta>
+                    <span className="text-f-xs text-white/40">{config.label}</span>
+                    {item.tags && item.tags.length > 0 && (
+                      <span className="text-f-xs text-white/25">
+                        {item.tags.slice(0, 3).join(' · ')}
+                      </span>
+                    )}
+                  </ListItemMeta>
+                </ListItem>
               )
             })}
           </div>

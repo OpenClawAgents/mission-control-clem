@@ -161,7 +161,7 @@ export default function PipelinePage() {
         <GlassCard hover={false}>
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Lightbulb className="h-12 w-12 text-white/20 mb-4" />
-            <h3 className="text-f-lg font-semibold text-white/80">Pipeline is empty</h3>
+            <h3 className="text-f-lg font-semibold text-white">Pipeline is empty</h3>
             <p className="mt-2 text-f-base text-white/50 max-w-md">
               Start by adding content ideas. They'll move through stages as you script, film, edit, and publish.
             </p>

@@ -23,7 +23,7 @@ export default function SettingsPage() {
             ].map((item) => (
               <div key={item.label} className="flex items-center justify-between py-2 border-t border-white/[0.04]">
                 <span className="text-f-base text-white/80">{item.label}</span>
-                <span className="text-f-sm text-white/50">{item.value}</span>
+                <span className="text-f-sm text-white/60">{item.value}</span>
               </div>
             ))}
           </div>
@@ -42,7 +42,7 @@ export default function SettingsPage() {
             ].map((item) => (
               <div key={item.label} className="flex items-center justify-between py-2 border-t border-white/[0.04]">
                 <span className="text-f-base text-white/80">{item.label}</span>
-                <span className="text-f-sm text-white/50">{item.value}</span>
+                <span className="text-f-sm text-white/60">{item.value}</span>
               </div>
             ))}
           </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { PageHeader, GlassCard, EmptyState, MetricCard } from '@/components/ds'
+import { PageHeader, GlassCard, EmptyState, MetricCard, ListItem, ListItemTitle, ListItemMeta } from '@/components/ds'
 import { Video, Plus, Clock, HardDrive, Tag, Film, Search } from 'lucide-react'
 import { getVideos, type Video as VideoType } from '@/lib/api'
 import { CreateModal } from '@/components/create-modal'
@@ -135,33 +135,28 @@ export default function VideosPage() {
           ) : (
             <div className="space-y-2">
               {filtered.map((video) => (
-                <div
+                <ListItem
                   key={video.id}
-                  className="flex items-center gap-3 py-3 px-3 rounded-[10px] bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] hover:border-white/[0.08] transition-all group cursor-pointer"
+                  icon={<Film className="h-4 w-4 text-white/30" />}
                 >
-                  <div className="h-10 w-14 rounded-[8px] bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
-                    <Film className="h-4 w-4 text-white/20" />
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <ListItemTitle>{video.title}</ListItemTitle>
+                    <span className="text-f-xs text-white/30 shrink-0">{formatDate(video.created_at)}</span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-f-base text-white/90 font-medium truncate">{video.title}</div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {video.duration_seconds && (
-                        <span className="text-f-xs text-white/40">{formatDuration(video.duration_seconds)}</span>
-                      )}
-                      {video.resolution && (
-                        <span className="text-f-xs text-white/30">{video.resolution}</span>
-                      )}
-                      {video.tags && video.tags.length > 0 && (
-                        <span className="text-f-xs text-white/25">
-                          {video.tags.slice(0, 3).join(' · ')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-f-xs text-white/30">{formatDate(video.created_at)}</span>
-                  </div>
-                </div>
+                  <ListItemMeta>
+                    {video.duration_seconds && (
+                      <span className="text-f-xs text-white/40">{formatDuration(video.duration_seconds)}</span>
+                    )}
+                    {video.resolution && (
+                      <span className="text-f-xs text-white/30">{video.resolution}</span>
+                    )}
+                    {video.tags && video.tags.length > 0 && (
+                      <span className="text-f-xs text-white/25">
+                        {video.tags.slice(0, 3).join(' · ')}
+                      </span>
+                    )}
+                  </ListItemMeta>
+                </ListItem>
               ))}
             </div>
           )}
