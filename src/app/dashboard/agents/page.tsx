@@ -1,55 +1,77 @@
-import { PageHeader, GlassCard, EmptyState, StatusDot } from '@/components/ds'
-import { Bot, Plus } from 'lucide-react'
+import { PageHeader, GlassCard, StatusDot } from '@/components/ds'
+import { Bot } from 'lucide-react'
+
+const agents = [
+  {
+    name: 'Content Strategist',
+    desc: 'Plans content calendar, repurposes newsletters into social assets',
+    status: 'online' as const,
+    skills: ['repurpose', 'calendar', 'scheduling'],
+  },
+  {
+    name: 'Research Scout',
+    desc: 'Monitors psychedelic law, DEA scheduling, church rulings, state reform',
+    status: 'online' as const,
+    skills: ['rss-monitor', 'source-verify', 'law-tracking'],
+  },
+  {
+    name: 'Script Writer',
+    desc: 'Produces viral-ready scripts with hooks, angles, and shot lists',
+    status: 'online' as const,
+    skills: ['hooks', 'angles', 'shot-lists'],
+  },
+  {
+    name: 'Digest Compiler',
+    desc: 'Assembles daily digests from research sources and RSS feeds',
+    status: 'idle' as const,
+    skills: ['summarize', 'categorize', 'format'],
+  },
+]
 
 export default function AgentsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
         title="Agents"
-        subtitle="Active sessions and agent status"
-        action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <Plus className="h-4 w-4" />
-            New Session
-          </button>
-        }
+        subtitle="Clem's production squad — coordinating content, research, and scripting"
       />
 
-      <GlassCard>
-        <div className="mb-4 flex items-center gap-2">
-          <StatusDot status="online" />
-          <h3 className="text-f-lg font-semibold text-white">Active Agents</h3>
-        </div>
-        <div className="space-y-3">
-          {[
-            { name: 'Clem', kind: 'Main Session', status: 'Online' },
-            { name: 'Digest Worker', kind: 'Isolated', status: 'Idle' },
-            { name: 'Skill Runner', kind: 'Isolated', status: 'Idle' },
-          ].map((agent) => (
-            <div key={agent.name} className="flex items-center justify-between py-2 border-t border-white/[0.04]">
-              <div className="flex items-center gap-3">
-                <Bot className="h-4 w-4 text-white/40" />
+      <div className="grid gap-4 md:grid-cols-2">
+        {agents.map((agent) => (
+          <GlassCard key={agent.name} className="relative overflow-hidden">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2">
+                <div className={`h-9 w-9 rounded-[10px] flex items-center justify-center ${
+                  agent.status === 'online'
+                    ? 'bg-[#22C55E]/10 border border-[#22C55E]/20'
+                    : 'bg-[#F59E0B]/10 border border-[#F59E0B]/20'
+                }`}>
+                  <Bot className={`h-4 w-4 ${
+                    agent.status === 'online' ? 'text-[#22C55E]' : 'text-[#F59E0B]'
+                  }`} />
+                </div>
                 <div>
-                  <span className="text-f-base text-white/80">{agent.name}</span>
-                  <span className="ml-2 text-f-xs text-white/40">{agent.kind}</span>
+                  <h3 className="text-f-base font-semibold text-white">{agent.name}</h3>
+                  <span className="flex items-center gap-1.5 text-f-xs">
+                    <StatusDot status={agent.status} size="sm" />
+                    <span className={agent.status === 'online' ? 'text-[#22C55E]' : 'text-[#F59E0B]'}>
+                      {agent.status === 'online' ? 'Online' : 'Idle'}
+                    </span>
+                  </span>
                 </div>
               </div>
-              <span className="flex items-center gap-2 text-f-sm text-[#22C55E]">
-                <StatusDot status={agent.status === 'Online' ? 'online' : 'idle'} size="sm" />
-                {agent.status}
-              </span>
             </div>
-          ))}
-        </div>
-      </GlassCard>
-
-      <GlassCard hover={false}>
-        <EmptyState
-          icon={<Bot className="h-12 w-12" />}
-          title="No live sessions"
-          description="Agent sessions will appear here when active."
-        />
-      </GlassCard>
+            <p className="text-f-sm text-white/60 mb-3">{agent.desc}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {agent.skills.map((skill) => (
+                <span key={skill} className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 text-f-2xs text-white/50">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </GlassCard>
+        ))}
+      </div>
     </div>
   )
 }

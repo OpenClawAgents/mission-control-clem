@@ -1,119 +1,148 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { PageHeader, GlassCard, StatusDot, MetricCard } from '@/components/ds'
-import { Sparkles, Plus } from 'lucide-react'
-import {
-  SKILL_DEFINITIONS,
-  CATEGORY_CONFIG,
-  getSkillCounts,
-  mergeCronData,
-  type SkillMeta,
-  type SkillCategory,
-} from '@/lib/api/skills'
-import type { CronJob } from '@/lib/api/skills'
+import { PageHeader, GlassCard, StatusDot, MetricCard, SectionHeader } from '@/components/ds'
+import { SKILL_DEFINITIONS, CATEGORY_CONFIG, getSkillCounts, type SkillMeta, type SkillCategory } from '@/lib/api/skills'
+import { Activity, Clock, Cpu, Pause } from 'lucide-react'
 
 const categoryIcons: Record<SkillCategory, string> = {
   content: '✍️',
-  research: '🔍',
+  research: '🔬',
   operations: '⚙️',
   automation: '🤖',
 }
 
-export default function SkillsPage() {
-  const [skills, setSkills] = useState<SkillMeta[]>(SKILL_DEFINITIONS)
-  const counts = getSkillCounts(skills)
+function SkillCard({ skill }: { skill: SkillMeta }) {
+  const cat = CATEGORY_CONFIG[skill.category]
+  return (
+    <GlassCard className="relative overflow-hidden">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2">
+          <div
+            className="h-9 w-9 rounded-[10px] flex items-center justify-center border"
+            style={{
+              backgroundColor: `${cat.color}10`,
+              borderColor: `${cat.color}20`,
+            }}
+          >
+            <span className="text-base">{categoryIcons[skill.category]}</span>
+          </div>
+          <div>
+            <h3 className="text-f-base font-semibold text-white">{skill.name}</h3>
+            <span className="flex items-center gap-1.5 text-f-xs">
+              <StatusDot
+                status={skill.status === 'active' ? 'online' : 'idle'}
+                size="sm"
+              />
+              <span className={skill.status === 'active' ? 'text-[#22C55E]' : 'text-[#F59E0B]'}>
+                {skill.status === 'active' ? 'Active' : 'Disabled'}
+              </span>
+            </span>
+          </div>
+        </div>
+        <span
+          className="inline-flex items-center rounded-full px-2 py-0.5 text-f-2xs font-medium border"
+          style={{
+            backgroundColor: `${cat.color}10`,
+            borderColor: `${cat.color}20`,
+            color: cat.color,
+          }}
+        >
+          {cat.label}
+        </span>
+      </div>
 
-  useEffect(() => {
-    async function loadCron() {
-      try {
-        const res = await fetch('/api/cron')
-        if (!res.ok) return
-        const jobs: CronJob[] = await res.json()
-        setSkills(mergeCronData(SKILL_DEFINITIONS, jobs))
-      } catch {
-        // Keep static definitions if API unavailable
-      }
-    }
-    loadCron()
-  }, [])
+      <p className="text-f-sm text-white/60 mb-3">{skill.description}</p>
+
+      <div className="flex items-center gap-4 text-f-xs text-white/40">
+        {skill.cronSchedule ? (
+          <span className="inline-flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {skill.cronSchedule}
+          </span>
+        ) : null}
+        {skill.agents.length > 0 ? (
+          <span className="inline-flex items-center gap-1">
+            <Cpu className="h-3 w-3" />
+            {skill.agents.join(', ')}
+          </span>
+        ) : null}
+      </div>
+    </GlassCard>
+  )
+}
+
+export default function SkillsPage() {
+  const counts = getSkillCounts(SKILL_DEFINITIONS)
+
+  const byCategory = (cat: SkillCategory) => SKILL_DEFINITIONS.filter(s => s.category === cat)
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Skills"
-        subtitle="Agent capabilities and scheduled tasks"
-        action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <Plus className="h-4 w-4" />
-            Add Skill
-          </button>
-        }
+        subtitle="Clem's skill registry — content, research, operations, and automation"
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+        <MetricCard
+          label="Total Skills"
+          value={counts.total}
+          icon={<Activity className="h-5 w-5" />}
+        />
         <MetricCard
           label="Active"
-          value={String(counts.active)}
-          change={`${counts.total} total`}
+          value={counts.active}
+          change={`${counts.active} running`}
           changeType="positive"
-          icon={<Sparkles className="h-5 w-5" />}
+          icon={<Activity className="h-5 w-5" />}
         />
         <MetricCard
           label="Disabled"
-          value={String(counts.disabled)}
-          change="Paused"
-          changeType="neutral"
+          value={counts.disabled}
+          icon={<Pause className="h-5 w-5" />}
         />
         <MetricCard
           label="On Schedule"
-          value={String(counts.withCron)}
-          change="Cron jobs"
+          value={counts.withCron}
+          change="cron jobs"
           changeType="neutral"
-        />
-        <MetricCard
-          label="Categories"
-          value="4"
-          change="All covered"
-          changeType="neutral"
+          icon={<Clock className="h-5 w-5" />}
         />
       </div>
 
-      {(Object.keys(CATEGORY_CONFIG) as SkillCategory[]).map((cat) => {
-        const catSkills = skills.filter((s) => s.category === cat)
-        const config = CATEGORY_CONFIG[cat]
-        return (
-          <GlassCard key={cat}>
-            <div className="mb-4 flex items-center gap-2">
-              <span className="text-f-lg">{categoryIcons[cat]}</span>
-              <h3 className="text-f-lg font-semibold text-white">{config.label}</h3>
-              <span className="ml-auto text-f-xs text-white/40">{catSkills.length} skills</span>
-            </div>
-            <div className="space-y-3">
-              {catSkills.map((skill) => (
-                <div
-                  key={skill.id}
-                  className="flex items-center justify-between py-2 border-t border-white/[0.04]"
-                >
-                  <div className="min-w-0">
-                    <div className="text-f-base text-white/80">{skill.name}</div>
-                    <div className="text-f-sm text-white/40 truncate">{skill.description}</div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0 ml-4">
-                    {skill.cronSchedule && (
-                      <span className="text-f-xs text-white/30 font-mono">{skill.cronSchedule}</span>
-                    )}
-                    <StatusDot
-                      status={skill.status === 'active' ? 'online' : skill.status === 'error' ? 'offline' : 'idle'}
-                      size="sm"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
-        )
-      })}
+      {byCategory('content').length > 0 && (
+        <div className="space-y-3">
+          <SectionHeader title="Content" />
+          <div className="grid gap-4 md:grid-cols-2">
+            {byCategory('content').map(skill => <SkillCard key={skill.id} skill={skill} />)}
+          </div>
+        </div>
+      )}
+
+      {byCategory('research').length > 0 && (
+        <div className="space-y-3">
+          <SectionHeader title="Research" />
+          <div className="grid gap-4 md:grid-cols-2">
+            {byCategory('research').map(skill => <SkillCard key={skill.id} skill={skill} />)}
+          </div>
+        </div>
+      )}
+
+      {byCategory('operations').length > 0 && (
+        <div className="space-y-3">
+          <SectionHeader title="Operations" />
+          <div className="grid gap-4 md:grid-cols-2">
+            {byCategory('operations').map(skill => <SkillCard key={skill.id} skill={skill} />)}
+          </div>
+        </div>
+      )}
+
+      {byCategory('automation').length > 0 && (
+        <div className="space-y-3">
+          <SectionHeader title="Automation" />
+          <div className="grid gap-4 md:grid-cols-2">
+            {byCategory('automation').map(skill => <SkillCard key={skill.id} skill={skill} />)}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
