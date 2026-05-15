@@ -8,13 +8,12 @@ import {
   Video,
   Newspaper,
   Bot,
-  FileText,
+  Sparkles,
   Calendar,
+  Zap,
+  FileText,
   Settings,
   Menu,
-  Zap,
-  Play,
-  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -55,19 +54,14 @@ const sections: NavSection[] = [
     ],
   },
   {
-    title: 'Operations',
+    title: 'System',
     items: [
       { label: 'Agents', href: '/dashboard/agents', icon: Bot },
       { label: 'Skills', href: '/dashboard/skills', icon: Sparkles },
       { label: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
       { label: 'Automation', href: '/dashboard/automation', icon: Zap },
-    ],
-  },
-  {
-    title: 'System',
-    items: [
-      { label: 'Settings', href: '/dashboard/settings', icon: Settings },
       { label: 'Docs', href: '/dashboard/docs', icon: BookOpen },
+      { label: 'Settings', href: '/dashboard/settings', icon: Settings },
     ],
   },
 ]
@@ -165,8 +159,8 @@ export function MobileSidebar({
         <SheetHeader className="h-16 flex flex-row items-center justify-center px-3 border-b border-white/[0.06] space-y-0">
           <Link href="/dashboard" onClick={() => onOpenChange(false)} className="cursor-pointer flex-1">
             <div className="mc-bubble flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-4 py-2">
-              <Play className="h-4 w-4 text-[#F59E0B] fill-[#F59E0B]" />
-              <span className="mc-text-gradient text-f-lg font-bold tracking-[0.1em] uppercase">MC</span>
+              <span className="mc-text-gradient text-f-lg font-bold tracking-[0.15em] uppercase">MC</span>
+              <span className="text-f-sm font-medium text-white/50 tracking-[0.1em] uppercase">Clem</span>
             </div>
           </Link>
           <SheetTitle className="sr-only">Mission Control</SheetTitle>
@@ -197,14 +191,14 @@ export function Sidebar() {
         {!collapsed ? (
           <Link href="/dashboard" className="cursor-pointer flex-1">
             <div className="mc-bubble flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-4 py-2">
-              <Play className="h-4 w-4 text-[#F59E0B] fill-[#F59E0B]" />
-              <span className="mc-text-gradient text-f-lg font-bold tracking-[0.1em] uppercase">MC</span>
+              <span className="mc-text-gradient text-f-lg font-bold tracking-[0.15em] uppercase">MC</span>
+              <span className="text-f-sm font-medium text-white/50 tracking-[0.1em] uppercase">Clem</span>
             </div>
           </Link>
         ) : (
           <Link href="/dashboard" className="mx-auto cursor-pointer">
             <div className="mc-bubble flex h-10 w-10 items-center justify-center rounded-[10px]">
-              <Play className="h-4 w-4 text-[#F59E0B] fill-[#F59E0B]" />
+              <span className="mc-text-gradient text-f-xl font-bold">🎬</span>
             </div>
           </Link>
         )}
