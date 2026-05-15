@@ -1,405 +1,278 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { PageHeader, GlassCard, StatusDot, MetricCard, SectionHeader } from '@/components/ds'
-import { SKILL_DEFINITIONS, CATEGORY_CONFIG, mergeCronData, getSkillCounts, type SkillMeta, type SkillCategory, type CronJob } from '@/lib/api/skills'
-import { Activity, Clock, Cpu, Pause, ChevronDown, ChevronUp, Edit3, ArrowRight, ArrowDown, Play, X } from 'lucide-react'
+import { PageHeader, GlassCard, StatusDot } from '@/components/ds'
+import { Bot, Clock, Sparkles, ChevronRight } from 'lucide-react'
 
-const categoryIcons: Record<SkillCategory, string> = {
-  content: '✍️',
-  research: '🔬',
-  operations: '⚙️',
-  automation: '🤖',
+interface AgentCron {
+  id: string
+  name: string
+  enabled: boolean
+  schedule: { kind: string; expr?: string; everyMs?: number; at?: string }
+  lastRunAt: number | null
+  lastRunStatus: string | null
+  lastError: string | null
+  nextRunAt: number | null
 }
 
-// Skill detail view showing the input→steps→output pipeline
-function SkillDetail({ skill, onClose }: { skill: SkillMeta; onClose: () => void }) {
-  // These would come from a skill definition file in production
-  const pipelineTemplates: Record<string, { input: string; steps: string[]; output: string }> = {
-    'content-strategist': {
-      input: 'Newsletter from archive (or topic prompt)',
-      steps: [
-        'Pull newsletter from digital library',
-        'Extract key themes and arguments',
-        'Generate 5 reel scripts with hooks',
-        'Generate 5 carousel posts with CTA',
-        'Generate 5 short-form captions',
-        'Tag by theme for content calendar sequencing',
-      ],
-      output: '15 platform-ready assets (5 reels + 5 carousels + 5 captions)',
-    },
-    'script-writer': {
-      input: 'Content idea or topic prompt',
-      steps: [
-        'Analyze topic against trending patterns',
-        'Generate 10 hook variants',
-        'Generate 10 elevator pitch variants',
-        'Generate 10 angle options for body',
-        'Suggest CTA based on platform',
-        'Generate shot list with recommended angles',
-        'Estimate runtime (target: sub-90s for reels)',
-      ],
-      output: 'Complete script with hooks, angles, shot list, and estimated runtime',
-    },
-    'research-scout': {
-      input: 'Scheduled scan (6 AM + 9 AM CT)',
-      steps: [
-        'Scan psychedelic law sources (Bicycle Day, MAPS, EROWID)',
-        'Check DEA scheduling updates',
-        'Monitor church/state court rulings (RFRA cases)',
-        'Track state-level reform bills',
-        'Cross-reference with digital library for context',
-        'Rank by relevance and content potential',
-      ],
-      output: 'Curated feed of 10-20 items with summaries and source links',
-    },
-    'digest-compiler': {
-      input: 'Research scout output + daily schedule',
-      steps: [
-        'Collect top 5-10 items from research scout',
-        'Write 2-3 sentence summary per item',
-        'Add recommended content angle per item',
-        'Assign category tags',
-        'Format for email delivery',
-        'Post to Mission Control dashboard',
-      ],
-      output: 'Daily digest with summaries, angles, and source links',
-    },
-    'video-catalog': {
-      input: 'New file in /Volumes/ClemVideo/RawFootage',
-      steps: [
-        'Detect new file via filesystem watcher',
-        'Extract metadata (duration, resolution, date)',
-        'Auto-tag by visual content (altar, group, individual, location)',
-        'Tag by metadata (source phone, file type)',
-        'Index in video catalog database',
-        'Make searchable via natural language',
-      ],
-      output: 'Cataloged video entry with tags, metadata, and search index',
-    },
-    'library-indexer': {
-      input: 'Content file (newsletter, research, blog post)',
-      steps: [
-        'Ingest text content from file',
-        'Chunk into semantic segments',
-        'Generate embeddings via vector model',
-        'Store in pgvector for semantic search',
-        'Apply topic tags (autism, church, psychedelic law, etc.)',
-        'Cross-link to related library entries',
-      ],
-      output: 'Indexed and searchable library entry with embeddings',
-    },
-    'law-tracker': {
-      input: 'Scheduled scan of legal databases',
-      steps: [
-        'Check DEA Federal Register updates',
-        'Monitor FDA breakthrough therapy designations',
-        'Track state-level psychedelic reform bills',
-        'Watch for church/religious exemption rulings',
-        'Flag items matching Clem\'s content angles',
-      ],
-      output: 'Prioritized list of legal/policy changes with content angles',
-    },
-    'social-publisher': {
-      input: 'Approved content asset',
-      steps: [
-        'Receive approved content from pipeline',
-        'Optimize posting time for target platform',
-        'Schedule post via platform API',
-        'Track initial engagement metrics',
-        'Feed performance data back to content strategist',
-      ],
-      output: 'Scheduled and tracked social media post',
-    },
-    'system-health': {
-      input: 'Scheduled health check (every 30m)',
-      steps: [
-        'Ping Supabase health endpoint',
-        'Check Gateway uptime',
-        'Verify API route availability',
-        'Check disk space on Mac Mini',
-        'Report anomalies to Clem',
-      ],
-      output: 'Health status report + alerts for failures',
-    },
-    'backup-nightly': {
-      input: 'Scheduled trigger (2 AM CT)',
-      steps: [
-        'Export content table to JSON',
-        'Export digests table to JSON',
-        'Export video metadata to JSON',
-        'Compress and timestamp backup',
-        'Store in /Volumes/ClemDocs/Backups/',
-      ],
-      output: 'Timestamped backup archive',
-    },
-  }
-
-  const pipeline = pipelineTemplates[skill.id] || {
-    input: 'Input data or trigger',
-    steps: ['Process through skill pipeline'],
-    output: 'Structured output',
-  }
-
-  return (
-    <GlassCard hover={false} className="relative">
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 h-8 w-8 rounded-[8px] bg-white/[0.04] border border-white/[0.06] flex items-center justify-center hover:bg-white/[0.08] transition-all"
-      >
-        <X className="h-4 w-4 text-white/60" />
-      </button>
-
-      <div className="flex items-center gap-3 mb-6">
-        <div
-          className="h-12 w-12 rounded-[12px] flex items-center justify-center border text-xl"
-          style={{
-            backgroundColor: `${CATEGORY_CONFIG[skill.category].color}10`,
-            borderColor: `${CATEGORY_CONFIG[skill.category].color}20`,
-          }}
-        >
-          {categoryIcons[skill.category]}
-        </div>
-        <div>
-          <h2 className="text-f-lg font-semibold text-white">{skill.name}</h2>
-          <div className="flex items-center gap-2 mt-0.5">
-            <StatusDot status={skill.status === 'active' ? 'online' : 'idle'} size="sm" />
-            <span className={`text-f-sm ${skill.status === 'active' ? 'text-[#22C55E]' : 'text-[#F59E0B]'}`}>
-              {skill.status === 'active' ? 'Active' : 'Disabled'}
-            </span>
-            {skill.cronSchedule && (
-              <span className="text-f-xs text-white/40">· {skill.cronSchedule}</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <p className="text-f-base text-white/60 mb-6">{skill.description}</p>
-
-      {/* Pipeline visualization */}
-      <div className="space-y-3">
-        <div className="text-f-sm font-semibold text-white/80 uppercase tracking-wider">Pipeline</div>
-
-        {/* Input */}
-        <div className="rounded-[12px] bg-[#3B82F6]/5 border border-[#3B82F6]/20 p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-6 w-6 rounded-[6px] bg-[#3B82F6]/20 flex items-center justify-center">
-              <ArrowDown className="h-3 w-3 text-[#3B82F6]" />
-            </div>
-            <span className="text-f-xs font-semibold text-[#3B82F6] uppercase tracking-wider">Input</span>
-          </div>
-          <p className="text-f-sm text-white/80 ml-8">{pipeline.input}</p>
-        </div>
-
-        {/* Steps */}
-        <div className="space-y-2 ml-4">
-          {pipeline.steps.map((step, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <div className="flex flex-col items-center">
-                <div className="h-6 w-6 rounded-full bg-[#F59E0B]/20 border border-[#F59E0B]/30 flex items-center justify-center text-f-2xs font-bold text-[#F59E0B]">
-                  {i + 1}
-                </div>
-                {i < pipeline.steps.length - 1 && (
-                  <div className="w-px h-3 bg-white/[0.06]" />
-                )}
-              </div>
-              <p className="text-f-sm text-white/70 pt-0.5">{step}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Output */}
-        <div className="rounded-[12px] bg-[#22C55E]/5 border border-[#22C55E]/20 p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-6 w-6 rounded-[6px] bg-[#22C55E]/20 flex items-center justify-center">
-              <ArrowRight className="h-3 w-3 text-[#22C55E]" />
-            </div>
-            <span className="text-f-xs font-semibold text-[#22C55E] uppercase tracking-wider">Output</span>
-          </div>
-          <p className="text-f-sm text-white/80 ml-8">{pipeline.output}</p>
-        </div>
-      </div>
-
-      {/* Agents */}
-      {skill.agents.length > 0 && (
-        <div className="mt-6 pt-4 border-t border-white/[0.06]">
-          <div className="text-f-xs text-white/40 mb-2">Assigned Agents</div>
-          <div className="flex gap-2">
-            {skill.agents.map((agent) => (
-              <span
-                key={agent}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-white/[0.04] border border-white/[0.06] text-f-sm text-white/70"
-              >
-                <Cpu className="h-3 w-3" />
-                {agent}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </GlassCard>
-  )
+interface AgentData {
+  agentId: string
+  name?: string
+  emoji?: string
+  model?: string
+  status: 'online' | 'idle' | 'offline'
+  cronJobs: AgentCron[]
+  activeSessions: number
 }
 
-function SkillCard({ skill, onClick }: { skill: SkillMeta; onClick: () => void }) {
-  const cat = CATEGORY_CONFIG[skill.category]
-  return (
-    <div onClick={onClick} className="cursor-pointer">
-    <GlassCard className="group" hover={true}>
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2">
-          <div
-            className="h-9 w-9 rounded-[10px] flex items-center justify-center border"
-            style={{
-              backgroundColor: `${cat.color}10`,
-              borderColor: `${cat.color}20`,
-            }}
-          >
-            <span className="text-base">{categoryIcons[skill.category]}</span>
-          </div>
-          <div>
-            <h3 className="text-f-base font-semibold text-white group-hover:text-[#F59E0B] transition-colors">{skill.name}</h3>
-            <span className="flex items-center gap-1.5 text-f-xs">
-              <StatusDot
-                status={skill.status === 'active' ? 'online' : 'idle'}
-                size="sm"
-              />
-              <span className={skill.status === 'active' ? 'text-[#22C55E]' : 'text-[#F59E0B]'}>
-                {skill.status === 'active' ? 'Active' : 'Disabled'}
-              </span>
-            </span>
-          </div>
-        </div>
-        <span
-          className="inline-flex items-center rounded-full px-2 py-0.5 text-f-2xs font-medium border"
-          style={{
-            backgroundColor: `${cat.color}10`,
-            borderColor: `${cat.color}20`,
-            color: cat.color,
-          }}
-        >
-          {cat.label}
-        </span>
-      </div>
+// Skill metadata — descriptions and categories keyed by agentId
+const SKILL_META: Record<string, { desc: string; category: 'content' | 'research' | 'operations' | 'automation'; skills: string[] }> = {
+  main: {
+    desc: 'Mission Control orchestrator — coordinates all agents, manages the dashboard, and runs system tasks',
+    category: 'automation',
+    skills: ['orchestration', 'gateway-health', 'nightly-backup'],
+  },
+  'content-strategist': {
+    desc: 'Plans content calendar, repurposes newsletters into social assets, manages publishing queue',
+    category: 'content',
+    skills: ['repurpose', 'calendar', 'growth-metrics', 'scheduling'],
+  },
+  'research-scout': {
+    desc: 'Monitors psychedelic law, DEA scheduling, church rulings, state reform, and trending topics',
+    category: 'research',
+    skills: ['law-tracking', 'trending-scan', 'source-verify', 'rss-monitor'],
+  },
+  'script-writer': {
+    desc: 'Produces viral-ready scripts with hooks, angles, and shot lists from research material',
+    category: 'content',
+    skills: ['hooks', 'angles', 'shot-lists', 'cta-writing'],
+  },
+  'digest-compiler': {
+    desc: 'Assembles daily digests from research sources, RSS feeds, and law trackers',
+    category: 'research',
+    skills: ['summarize', 'categorize', 'format', 'distribute'],
+  },
+  'video-cataloger': {
+    desc: 'Tags and indexes raw footage from /Volumes/ClemVideo/RawFootage with metadata for fast retrieval',
+    category: 'operations',
+    skills: ['metadata-extract', 'transcription', 'auto-tagging'],
+  },
+  'library-indexer': {
+    desc: 'Indexes and updates the digital library at /Volumes/ClemDocs/Library for search and repurposing',
+    category: 'operations',
+    skills: ['text-extract', 'embedding-gen', 'dedup', 'tagging'],
+  },
+}
 
-      <p className="text-f-sm text-white/60 mb-3">{skill.description}</p>
+const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
+  content: { label: 'Content', color: '#F59E0B' },
+  research: { label: 'Research', color: '#A855F7' },
+  operations: { label: 'Operations', color: '#22C55E' },
+  automation: { label: 'Automation', color: '#3B82F6' },
+}
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4 text-f-xs text-white/40">
-          {skill.cronSchedule ? (
-            <span className="inline-flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {skill.cronSchedule}
-            </span>
-          ) : null}
-          {skill.agents.length > 0 ? (
-            <span className="inline-flex items-center gap-1">
-              <Cpu className="h-3 w-3" />
-              {skill.agents.join(', ')}
-            </span>
-          ) : null}
-        </div>
-        <Edit3 className="h-3.5 w-3.5 text-white/20 group-hover:text-[#F59E0B] transition-colors" />
-      </div>
-    </GlassCard>
-    </div>
-  )
+function formatCronSchedule(schedule: AgentCron['schedule']): string {
+  if (schedule.kind === 'cron' && schedule.expr) {
+    const parts = schedule.expr.split(' ')
+    if (parts.length === 5) {
+      const [min, hour, dayOfMonth, , dayOfWeek] = parts
+      if (dayOfMonth === '*' && dayOfWeek === '*') {
+        if (hour.includes(',')) {
+          const times = hour.split(',').map(h => `${h.padStart(2, '0')}:${min.padStart(2, '0')}`).join(', ')
+          return `Daily at ${times}`
+        }
+        return `Daily at ${hour.padStart(2, '0')}:${min.padStart(2, '0')}`
+      }
+      if (dayOfWeek !== '*') return 'Weekly'
+    }
+    return schedule.expr
+  }
+  if (schedule.kind === 'every' && schedule.everyMs) {
+    const m = Math.round(schedule.everyMs / 60000)
+    return m >= 60 ? `Every ${Math.round(m / 60)}h` : `Every ${m}m`
+  }
+  return 'One-time'
+}
+
+const statusConfig = {
+  online: { color: '#22C55E', label: 'Online' },
+  idle: { color: '#F59E0B', label: 'Idle' },
+  offline: { color: '#6B7280', label: 'Offline' },
 }
 
 export default function SkillsPage() {
-  const [skills, setSkills] = useState<SkillMeta[]>(SKILL_DEFINITIONS)
-  const [selectedSkill, setSelectedSkill] = useState<SkillMeta | null>(null)
+  const [agents, setAgents] = useState<AgentData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [expandedAgent, setExpandedAgent] = useState<string | null>(null)
 
   useEffect(() => {
-    async function loadCronData() {
-      try {
-        const res = await fetch('/api/cron')
-        if (res.ok) {
-          const data = await res.json()
-          const cronJobs: CronJob[] = data.jobs ?? []
-          setSkills(mergeCronData(SKILL_DEFINITIONS, cronJobs))
-        }
-      } catch {
-        // Gateway may be unreachable
-      }
-    }
-    loadCronData()
+    fetch('/api/agents')
+      .then(r => r.ok ? r.json() : r.json().then(j => { throw new Error(j.error) }))
+      .then(data => {
+        setAgents(data.agents || [])
+        setError(null)
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
-  const counts = getSkillCounts(skills)
-  const byCategory = (cat: SkillCategory) => skills.filter(s => s.category === cat)
+  const categories = Object.entries(CATEGORY_CONFIG).map(([key, config]) => ({
+    key,
+    ...config,
+    agents: agents.filter(a => SKILL_META[a.agentId]?.category === key),
+  })).filter(c => c.agents.length > 0)
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Skills"
-        subtitle="Clem's skill registry — input → steps → output pipelines"
+        title="Skills & Agents"
+        subtitle="Agent capabilities and their scheduled tasks"
       />
 
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-        <MetricCard
-          label="Total Skills"
-          value={counts.total}
-          icon={<Activity />}
-        />
-        <MetricCard
-          label="Active"
-          value={counts.active}
-          change={`${counts.active} running`}
-          changeType="positive"
-          icon={<Play />}
-        />
-        <MetricCard
-          label="Disabled"
-          value={counts.disabled}
-          icon={<Pause />}
-        />
-        <MetricCard
-          label="On Schedule"
-          value={counts.withCron}
-          change="cron jobs"
-          changeType="neutral"
-          icon={<Clock />}
-        />
-      </div>
-
-      {selectedSkill ? (
-        <SkillDetail skill={selectedSkill} onClose={() => setSelectedSkill(null)} />
-      ) : null}
-
-      {byCategory('content').length > 0 && (
-        <div className="space-y-3">
-          <SectionHeader title="Content" />
-          <div className="grid gap-4 md:grid-cols-2">
-            {byCategory('content').map(skill => <SkillCard key={skill.id} skill={skill} onClick={() => setSelectedSkill(skill)} />)}
+      {error && (
+        <GlassCard hover={false}>
+          <div className="py-4 text-center">
+            <p className="text-f-sm text-[#EF4444]">Failed to load agents: {error}</p>
+            <p className="text-f-xs text-white/40 mt-1">Make sure the Gateway is running on the same machine</p>
           </div>
-        </div>
+        </GlassCard>
       )}
 
-      {byCategory('research').length > 0 && (
-        <div className="space-y-3">
-          <SectionHeader title="Research" />
-          <div className="grid gap-4 md:grid-cols-2">
-            {byCategory('research').map(skill => <SkillCard key={skill.id} skill={skill} onClick={() => setSelectedSkill(skill)} />)}
+      {loading ? (
+        <GlassCard hover={false}>
+          <div className="flex items-center justify-center py-12">
+            <Sparkles className="h-5 w-5 text-white/20 animate-spin" />
           </div>
-        </div>
-      )}
+        </GlassCard>
+      ) : (
+        <div className="space-y-8">
+          {categories.map(({ key, label, color, agents: catAgents }) => (
+            <div key={key}>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+                <h2 className="text-f-base font-semibold text-white">{label}</h2>
+                <span className="text-f-xs text-white/30">{catAgents.length} agent{catAgents.length !== 1 ? 's' : ''}</span>
+              </div>
 
-      {byCategory('operations').length > 0 && (
-        <div className="space-y-3">
-          <SectionHeader title="Operations" />
-          <div className="grid gap-4 md:grid-cols-2">
-            {byCategory('operations').map(skill => <SkillCard key={skill.id} skill={skill} onClick={() => setSelectedSkill(skill)} />)}
-          </div>
-        </div>
-      )}
+              <div className="space-y-3">
+                {catAgents.map((agent) => {
+                  const meta = SKILL_META[agent.agentId] || { desc: agent.agentId, skills: [] }
+                  const isExpanded = expandedAgent === agent.agentId
+                  const status = statusConfig[agent.status]
 
-      {byCategory('automation').length > 0 && (
-        <div className="space-y-3">
-          <SectionHeader title="Automation" />
-          <div className="grid gap-4 md:grid-cols-2">
-            {byCategory('automation').map(skill => <SkillCard key={skill.id} skill={skill} onClick={() => setSelectedSkill(skill)} />)}
-          </div>
+                  return (
+                    <GlassCard key={agent.agentId}>
+                      <button
+                        className="w-full flex items-center justify-between"
+                        onClick={() => setExpandedAgent(isExpanded ? null : agent.agentId)}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className="h-10 w-10 rounded-[10px] flex items-center justify-center border shrink-0"
+                            style={{ backgroundColor: `${status.color}10`, borderColor: `${status.color}20` }}
+                          >
+                            {agent.emoji ? (
+                              <span className="text-f-lg">{agent.emoji}</span>
+                            ) : (
+                              <Bot className="h-5 w-5" style={{ color: status.color }} />
+                            )}
+                          </div>
+                          <div className="min-w-0 text-left">
+                            <div className="text-f-base text-white font-medium truncate">{agent.name || agent.agentId}</div>
+                            <div className="flex items-center gap-2 text-f-xs">
+                              <span className="flex items-center gap-1">
+                                <StatusDot status={agent.status} size="sm" />
+                                <span style={{ color: status.color }}>{status.label}</span>
+                              </span>
+                              {agent.cronJobs.length > 0 && (
+                                <span className="text-white/25">· {agent.cronJobs.length} task{agent.cronJobs.length !== 1 ? 's' : ''}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <ChevronRight className={`h-4 w-4 text-white/30 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
+                      </button>
+
+                      {isExpanded && (
+                        <div className="mt-4 pt-4 border-t border-white/[0.06] space-y-4">
+                          {/* Description */}
+                          <p className="text-f-sm text-white/60">{meta.desc}</p>
+
+                          {/* Skills */}
+                          <div className="flex flex-wrap gap-1.5">
+                            {meta.skills.map((skill) => (
+                              <span key={skill} className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 text-f-2xs text-white/50">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+
+                          {/* Pipeline */}
+                          <div>
+                            <div className="text-f-xs text-white/40 font-medium uppercase tracking-wider mb-2">Pipeline</div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {[
+                                { label: 'Input', color: '#3B82F6' },
+                                { label: 'Process', color: '#A855F7' },
+                                { label: 'Output', color: '#22C55E' },
+                              ].map((stage, i) => (
+                                <span
+                                  key={stage.label}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-f-xs font-medium border"
+                                  style={{ backgroundColor: `${stage.color}10`, borderColor: `${stage.color}20`, color: stage.color }}
+                                >
+                                  {stage.label}
+                                  {i < 2 && <span className="text-white/20">→</span>}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Cron Jobs */}
+                          {agent.cronJobs.length > 0 && (
+                            <div>
+                              <div className="text-f-xs text-white/40 font-medium uppercase tracking-wider mb-2">Scheduled Tasks</div>
+                              <div className="space-y-2">
+                                {agent.cronJobs.map((job) => (
+                                  <div key={job.id} className="flex items-center justify-between gap-2 py-2 border-t border-white/[0.04] last:border-0">
+                                    <div className="min-w-0">
+                                      <div className="text-f-sm text-white/80 font-medium">{job.name}</div>
+                                      <div className="text-f-xs text-white/40">{formatCronSchedule(job.schedule)}</div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      {!job.enabled && (
+                                        <span className="text-f-2xs text-white/30">Disabled</span>
+                                      )}
+                                      {job.lastRunStatus === 'error' && (
+                                        <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-f-2xs bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20">error</span>
+                                      )}
+                                      {job.lastRunStatus === 'success' && (
+                                        <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-f-2-xs bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20">ok</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </GlassCard>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+
+          {categories.length === 0 && !loading && !error && (
+            <GlassCard hover={false}>
+              <div className="py-8 text-center text-white/40">
+                <Bot className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                <p className="text-f-sm">No agents configured yet</p>
+              </div>
+            </GlassCard>
+          )}
         </div>
       )}
     </div>

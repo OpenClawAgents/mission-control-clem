@@ -1,14 +1,11 @@
 /**
  * OpenClaw Gateway HTTP client.
  *
- * The Gateway runs locally at http://127.0.0.1:{GATEWAY_PORT}.
- * Auth uses a bearer token from OPENCLAW_GATEWAY_TOKEN env var or the
- * local config file at ~/.openclaw/openclaw.json.
+ * Primary: Gateway HTTP API at http://{HOST}:{PORT}/tools/invoke
+ * Fallback: CLI (`openclaw`) for operations not available via HTTP
  *
- * Two access paths:
- * 1. `/tools/invoke` — direct tool invocation (always enabled, but blocks
- *    cron/exec/sessions_spawn/etc for security)
- * 2. CLI — `openclaw cron ...` for privileged operations
+ * On Vercel (no local Gateway), API routes return graceful errors.
+ * On the Mac Mini, everything works because the Gateway is local.
  */
 
 import { execFile } from 'child_process'
@@ -33,6 +30,7 @@ async function getGatewayToken(): Promise<string> {
   if (process.env.OPENCLAW_GATEWAY_TOKEN) return process.env.OPENCLAW_GATEWAY_TOKEN
   if (_cachedToken) return _cachedToken
 
+  // Only read config file on local machine (not Vercel)
   const configPath = join(homedir(), '.openclaw', 'openclaw.json')
   const raw = await readFile(configPath, 'utf-8')
   const config = JSON.parse(raw)
@@ -40,6 +38,20 @@ async function getGatewayToken(): Promise<string> {
   if (!token) throw new Error('No gateway auth token found in config')
   _cachedToken = token
   return token
+}
+
+/** Check if Gateway is reachable */
+async function isGatewayReachable(): Promise<boolean> {
+  try {
+    const token = await getGatewayToken()
+    const res = await fetch(`${GATEWAY_BASE}/health`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+      signal: AbortSignal.timeout(3000),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -67,12 +79,10 @@ export async function invokeTool(tool: string, action: string, args: Record<stri
     throw new Error(json.error?.message || `Tool error: ${json.error?.type || 'unknown'}`)
   }
 
-  // Tool results come back as { ok, result: { content: [{ type, text }], details } }
   const result = json.result
   const textContent = result?.content?.find((c: { type: string }) => c.type === 'text')
   const details = result?.details
 
-  // Prefer structured details; fall back to parsed text content
   if (details !== undefined) return details
   if (textContent?.text) {
     try { return JSON.parse(textContent.text) } catch { return textContent.text }
@@ -81,7 +91,7 @@ export async function invokeTool(tool: string, action: string, args: Record<stri
 }
 
 // ---------------------------------------------------------------------------
-// CLI — for privileged operations (cron, etc.)
+// CLI — fallback for operations not available via HTTP API
 // ---------------------------------------------------------------------------
 
 async function runCLI(args: string[]): Promise<string> {
@@ -92,11 +102,15 @@ async function runCLI(args: string[]): Promise<string> {
   return stdout
 }
 
+/** Check if CLI is available */
+function isCLIAvailable(): boolean {
+  return process.platform !== 'win32' // CLI is available on macOS/Linux
+}
+
 // ---------------------------------------------------------------------------
-// High-level API
+// High-level API — Sessions (via Gateway HTTP)
 // ---------------------------------------------------------------------------
 
-/** List active sessions */
 export async function listSessions() {
   return invokeTool('sessions_list', 'json', {}) as Promise<{
     count: number
@@ -116,28 +130,32 @@ export async function listSessions() {
   }>
 }
 
-/** Get session status for a given session key */
 export async function getSessionStatus(sessionKey: string = 'main') {
   return invokeTool('session_status', 'json', { sessionKey }) as Promise<Record<string, unknown>>
 }
 
-/** Search memory */
-export async function searchMemory(query: string) {
-  return invokeTool('memory_search', 'json', { query }) as Promise<unknown>
-}
-
-/** Get gateway status via CLI — returns raw JSON from `openclaw status --json` */
+/** Get gateway status — tries CLI first, falls back to health check */
 export async function getGatewayStatus(): Promise<Record<string, unknown>> {
-  const raw = await runCLI(['status', '--json'])
   try {
-    return JSON.parse(raw)
+    if (isCLIAvailable()) {
+      const raw = await runCLI(['status', '--json'])
+      try {
+        return JSON.parse(raw)
+      } catch {
+        // Fall through to health check
+      }
+    }
   } catch {
-    throw new Error('Could not parse gateway status')
+    // Fall through to health check
   }
+
+  // Fallback: just check if Gateway is reachable
+  const reachable = await isGatewayReachable()
+  return { status: reachable ? 'online' : 'offline', gateway: { port: GATEWAY_PORT, host: GATEWAY_HOST } }
 }
 
 // ---------------------------------------------------------------------------
-// Cron management via CLI
+// Cron management — tries CLI, falls back to Gateway tool
 // ---------------------------------------------------------------------------
 
 export interface CronJob {
@@ -153,6 +171,7 @@ export interface CronJob {
   state?: {
     lastRunAtMs?: number
     lastRunStatus?: string
+    lastError?: string
     nextRunAtMs?: number
     [key: string]: unknown
   }
@@ -171,22 +190,42 @@ export interface CronRun {
 
 /** List all cron jobs */
 export async function listCronJobs(): Promise<CronJob[]> {
-  const raw = await runCLI(['cron', 'list', '--json'])
+  // Try CLI first (most reliable)
   try {
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : parsed.jobs ?? parsed.data ?? []
+    if (isCLIAvailable()) {
+      const raw = await runCLI(['cron', 'list', '--json'])
+      const parsed = JSON.parse(raw)
+      const jobs = Array.isArray(parsed) ? parsed : parsed.jobs ?? parsed.data ?? []
+      if (jobs.length > 0) return jobs
+    }
   } catch {
-    // CLI may output "No cron jobs." when empty
+    // CLI not available or failed — fall through
+  }
+
+  // Fallback: try Gateway tool
+  try {
+    const result = await invokeTool('cron', 'list', {}) as { jobs?: CronJob[] }
+    return result?.jobs ?? []
+  } catch {
     return []
   }
 }
 
 /** Get runs for a cron job */
 export async function getCronRuns(jobId: string): Promise<CronRun[]> {
-  const raw = await runCLI(['cron', 'runs', jobId, '--json'])
   try {
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : parsed.runs ?? parsed.data ?? []
+    if (isCLIAvailable()) {
+      const raw = await runCLI(['cron', 'runs', jobId, '--json'])
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : parsed.runs ?? parsed.data ?? []
+    }
+  } catch {
+    // Fall through
+  }
+
+  try {
+    const result = await invokeTool('cron', 'runs', { jobId }) as { runs?: CronRun[] }
+    return result?.runs ?? []
   } catch {
     return []
   }
@@ -194,21 +233,63 @@ export async function getCronRuns(jobId: string): Promise<CronRun[]> {
 
 /** Enable or disable a cron job */
 export async function setJobEnabled(jobId: string, enabled: boolean): Promise<void> {
-  await runCLI(['cron', 'update', jobId, '--json', JSON.stringify({ enabled })])
+  try {
+    if (isCLIAvailable()) {
+      await runCLI(['cron', 'update', jobId, '--json', JSON.stringify({ enabled })])
+      return
+    }
+  } catch {
+    // Fall through
+  }
+  await invokeTool('cron', 'update', { jobId, enabled })
 }
 
 /** Run a cron job immediately */
 export async function runCronJob(jobId: string): Promise<void> {
-  await runCLI(['cron', 'run', jobId])
+  try {
+    if (isCLIAvailable()) {
+      await runCLI(['cron', 'run', jobId])
+      return
+    }
+  } catch {
+    // Fall through
+  }
+  await invokeTool('cron', 'run', { jobId })
 }
 
 /** Delete a cron job */
 export async function deleteCronJob(jobId: string): Promise<void> {
-  await runCLI(['cron', 'remove', jobId])
+  try {
+    if (isCLIAvailable()) {
+      await runCLI(['cron', 'remove', jobId])
+      return
+    }
+  } catch {
+    // Fall through
+  }
+  await invokeTool('cron', 'remove', { jobId })
 }
 
-/** Create a new cron job via the Gateway tool API */
+/** Create a new cron job */
 export async function createCronJob(opts: { name: string; schedule: string; message: string }): Promise<unknown> {
+  // Try CLI first
+  try {
+    if (isCLIAvailable()) {
+      const raw = await runCLI(['cron', 'add', '--json', JSON.stringify({
+        name: opts.name,
+        schedule: { kind: 'cron', expr: opts.schedule, tz: 'America/Chicago' },
+        payload: { kind: 'agentTurn', message: opts.message, lightContext: true },
+        delivery: { mode: 'announce' },
+        sessionTarget: 'isolated',
+        enabled: true,
+      })])
+      try { return JSON.parse(raw) } catch { return { ok: true } }
+    }
+  } catch {
+    // Fall through
+  }
+
+  // Fallback: Gateway tool
   return invokeTool('cron', 'add', {
     name: opts.name,
     schedule: { kind: 'cron', expr: opts.schedule, tz: 'America/Chicago' },
@@ -220,7 +301,7 @@ export async function createCronJob(opts: { name: string; schedule: string; mess
 }
 
 // ---------------------------------------------------------------------------
-// Agent management via CLI
+// Agent management
 // ---------------------------------------------------------------------------
 
 export interface AgentInfo {
@@ -234,11 +315,41 @@ export interface AgentInfo {
 
 /** List all configured agents */
 export async function listAgents(): Promise<AgentInfo[]> {
-  const raw = await runCLI(['agents', 'list', '--json'])
+  // CLI is the primary way to list agents
   try {
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : parsed.agents ?? parsed.data ?? []
+    if (isCLIAvailable()) {
+      const raw = await runCLI(['agents', 'list', '--json'])
+      const parsed = JSON.parse(raw)
+      const agents = Array.isArray(parsed) ? parsed : parsed.agents ?? parsed.data ?? []
+      if (agents.length > 0) return agents
+    }
   } catch {
-    return []
+    // CLI not available
+  }
+
+  // No HTTP fallback for agent listing — return empty
+  return []
+}
+
+// ---------------------------------------------------------------------------
+// Gateway reachability check
+// ---------------------------------------------------------------------------
+
+export async function checkGatewayConnection(): Promise<{
+  reachable: boolean
+  host: string
+  port: number
+  error?: string
+}> {
+  try {
+    const reachable = await isGatewayReachable()
+    return { reachable, host: GATEWAY_HOST, port: GATEWAY_PORT }
+  } catch (err) {
+    return {
+      reachable: false,
+      host: GATEWAY_HOST,
+      port: GATEWAY_PORT,
+      error: err instanceof Error ? err.message : 'Unknown error',
+    }
   }
 }
