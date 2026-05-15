@@ -112,28 +112,28 @@ export default function ContentPage() {
           value={loading ? '...' : String(items.length)}
           change={items.length > 0 ? `${publishedCount} published` : 'Start creating'}
           changeType={publishedCount > 0 ? 'positive' : 'neutral'}
-          icon={<Archive className="h-5 w-5" />}
+          icon={<Archive />}
         />
         <MetricCard
           label="Drafts"
           value={String(draftCount)}
           change="In progress"
           changeType="neutral"
-          icon={<FileText className="h-5 w-5" />}
+          icon={<FileText />}
         />
         <MetricCard
           label="Published"
           value={String(publishedCount)}
           change="Live"
           changeType="positive"
-          icon={<Share2 className="h-5 w-5" />}
+          icon={<Share2 />}
         />
         <MetricCard
           label="In Review"
           value={String(items.filter((i) => i.status === 'review').length)}
           change="Pending"
           changeType="neutral"
-          icon={<Tag className="h-5 w-5" />}
+          icon={<Tag />}
         />
       </div>
 
@@ -223,7 +223,7 @@ export default function ContentPage() {
       {!loading && items.length === 0 && (
         <GlassCard hover={false}>
           <EmptyState
-            icon={<Archive className="h-12 w-12" />}
+            icon={<Archive />}
             title="No content yet"
             description="Start adding newsletters, scripts, research, and social posts to your library. Use the New Content button above to get started."
           />

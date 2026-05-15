@@ -8,7 +8,9 @@ export interface SectionHeaderProps {
 export function SectionHeader({ title, action }: SectionHeaderProps) {
   return (
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <h2 className="text-f-2xl font-semibold text-white">{title}</h2>
+      <h2 className="text-f-2xl font-semibold text-white">
+        <span className="mc-text-gradient">{title}</span>
+      </h2>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
   )

@@ -133,28 +133,28 @@ export default function AutomationPage() {
           value={loading ? '...' : String(jobs.length)}
           change={`${jobs.length} configured`}
           changeType="neutral"
-          icon={<Timer className="h-5 w-5" />}
+          icon={<Timer />}
         />
         <MetricCard
           label="Active"
           value={String(activeCount)}
           change={activeCount > 0 ? 'Running' : 'None active'}
           changeType={activeCount > 0 ? 'positive' : 'neutral'}
-          icon={<Play className="h-5 w-5" />}
+          icon={<Play />}
         />
         <MetricCard
           label="Paused"
           value={String(jobs.length - activeCount)}
           change="Disabled"
           changeType="neutral"
-          icon={<Pause className="h-5 w-5" />}
+          icon={<Pause />}
         />
         <MetricCard
           label="Recent Runs"
           value={String(totalRuns)}
           change="Last 24h"
           changeType="neutral"
-          icon={<RefreshCw className="h-5 w-5" />}
+          icon={<RefreshCw />}
         />
       </div>
 
@@ -167,7 +167,7 @@ export default function AutomationPage() {
       ) : jobs.length === 0 ? (
         <GlassCard hover={false}>
           <EmptyState
-            icon={<Zap className="h-12 w-12" />}
+            icon={<Zap />}
             title="No automations yet"
             description="Set up cron jobs for daily digests, content scheduling, and recurring tasks. Use the New Automation button above to create one."
           />

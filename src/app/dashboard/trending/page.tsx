@@ -135,28 +135,28 @@ export default function TrendingPage() {
           value={loading ? '...' : String(scans.length)}
           change="Last 7 days"
           changeType="neutral"
-          icon={<TrendingUp className="h-5 w-5" />}
+          icon={<TrendingUp />}
         />
         <MetricCard
           label="Trend Items"
           value={String(totalItems)}
           change="Across all platforms"
           changeType="neutral"
-          icon={<Flame className="h-5 w-5" />}
+          icon={<Flame />}
         />
         <MetricCard
           label="Platforms"
           value={String(platforms.length)}
           change={platforms.join(', ') || 'None yet'}
           changeType="neutral"
-          icon={<Users className="h-5 w-5" />}
+          icon={<Users />}
         />
         <MetricCard
           label="Categories"
           value={String(scanTypes.length)}
           change={scanTypes.map(t => scanTypeLabels[t] || t).join(', ') || 'None'}
           changeType="neutral"
-          icon={<Hash className="h-5 w-5" />}
+          icon={<Hash />}
         />
       </div>
 
@@ -199,7 +199,7 @@ export default function TrendingPage() {
       ) : scans.length === 0 ? (
         <GlassCard hover={false}>
           <EmptyState
-            icon={<TrendingUp className="h-12 w-12" />}
+            icon={<TrendingUp />}
             title="No trending data yet"
             description="Set up the trending scanner to automatically detect trending sounds, hashtags, and challenges across platforms. Use the Log Trend button above to manually add data."
           />

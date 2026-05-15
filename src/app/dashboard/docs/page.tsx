@@ -11,7 +11,7 @@ export default function DocsPage() {
 
       <GlassCard hover={false}>
         <EmptyState
-          icon={<BookOpen className="h-12 w-12" />}
+          icon={<BookOpen />}
           title="Docs coming soon"
           description="In-dashboard documentation and API reference will be available here."
         />

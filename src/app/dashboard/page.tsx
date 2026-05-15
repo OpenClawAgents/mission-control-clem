@@ -235,28 +235,28 @@ export default function DashboardPage() {
           value={loading ? '...' : String(totalContent)}
           change={totalContent > 0 ? `${publishedCount} published` : 'Ready to add'}
           changeType={totalContent > 0 ? 'positive' : 'neutral'}
-          icon={<BookOpen className="h-5 w-5" />}
+          icon={<BookOpen />}
         />
         <MetricCard
           label="Digests"
           value={loading ? '...' : String(totalDigests)}
           change={totalDigests > 0 ? `${totalDigests} total` : 'Starting soon'}
           changeType={totalDigests > 0 ? 'positive' : 'neutral'}
-          icon={<Newspaper className="h-5 w-5" />}
+          icon={<Newspaper />}
         />
         <MetricCard
           label="Sessions"
           value={loading ? '...' : String(activeSessions.length)}
           change={activeSessions.length > 0 ? 'Active now' : 'No active'}
           changeType={activeSessions.length > 0 ? 'positive' : 'neutral'}
-          icon={<Activity className="h-5 w-5" />}
+          icon={<Activity />}
         />
         <MetricCard
           label="Tokens Used"
           value={loading ? '...' : totalTokens > 0 ? formatTokens(totalTokens) : '0'}
           change={totalCost > 0 ? `$${totalCost.toFixed(4)}` : 'No cost'}
           changeType="neutral"
-          icon={<Cpu className="h-5 w-5" />}
+          icon={<Cpu />}
         />
       </div>
 
@@ -267,14 +267,14 @@ export default function DashboardPage() {
           value={loading ? '...' : String(activeCronCount)}
           change={`${cronJobs.length} total jobs`}
           changeType="neutral"
-          icon={<Zap className="h-5 w-5" />}
+          icon={<Zap />}
         />
         <MetricCard
           label="Agents"
           value={loading ? '...' : String(heartbeatAgents.length)}
           change="Configured"
           changeType="neutral"
-          icon={<Bot className="h-5 w-5" />}
+          icon={<Bot />}
         />
         {tasks && (
           <>
@@ -283,14 +283,14 @@ export default function DashboardPage() {
               value={String(tasks.active)}
               change={`${tasks.total} total · ${tasks.failures} failed`}
               changeType={tasks.failures > 0 ? 'negative' : 'neutral'}
-              icon={<ListTodo className="h-5 w-5" />}
+              icon={<ListTodo />}
             />
             <MetricCard
               label="Gateway"
               value={gwVersion || '—'}
               change={gwUptime || 'Connected'}
               changeType="positive"
-              icon={<Timer className="h-5 w-5" />}
+              icon={<Timer />}
             />
           </>
         )}
@@ -300,7 +300,7 @@ export default function DashboardPage() {
             value={gwVersion || '—'}
             change={gwUptime || 'Local'}
             changeType="positive"
-            icon={<Server className="h-5 w-5" />}
+            icon={<Server />}
           />
         )}
       </div>
@@ -310,7 +310,9 @@ export default function DashboardPage() {
         <GlassCard>
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-[#F59E0B]" />
+              <div className="h-7 w-7 rounded-[8px] flex items-center justify-center bg-[#F59E0B]/10 border border-[#F59E0B]/20">
+                <Bot className="h-4 w-4 text-[#F59E0B]" />
+              </div>
               <h3 className="text-f-lg font-semibold text-white">Agents</h3>
             </div>
             <a href="/dashboard/agents" className="text-f-xs text-[#F59E0B] hover:text-[#F59E0B]/80 transition-colors">
@@ -385,7 +387,9 @@ export default function DashboardPage() {
         {/* Quick Actions */}
         <GlassCard>
           <div className="mb-4 flex items-center gap-2">
-            <Zap className="h-4 w-4 text-[#F59E0B]" />
+            <div className="h-7 w-7 rounded-[8px] flex items-center justify-center bg-[#F59E0B]/10 border border-[#F59E0B]/20">
+              <Zap className="h-4 w-4 text-[#F59E0B]" />
+            </div>
             <h3 className="text-f-lg font-semibold text-white">Quick Actions</h3>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -395,10 +399,12 @@ export default function DashboardPage() {
                 <a
                   key={action.label}
                   href={action.href}
-                  className="flex items-center gap-3 py-3 px-4 rounded-[10px] bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.04] hover:border-[#F59E0B]/20 transition-all group"
+                  className="flex items-center gap-3 py-3 px-4 rounded-[10px] bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.04] hover:border-[#F59E0B]/30 transition-all group"
                 >
-                  <Icon className="h-4 w-4 text-white/40 group-hover:text-[#F59E0B]" />
-                  <span className="text-f-base text-white/80 group-hover:text-white">{action.label}</span>
+                  <div className="h-7 w-7 rounded-[8px] flex items-center justify-center bg-white/[0.04] group-hover:bg-[#F59E0B]/10 border border-white/[0.06] group-hover:border-[#F59E0B]/20 transition-all shrink-0">
+                    <Icon className="h-3.5 w-3.5 text-white/40 group-hover:text-[#F59E0B] transition-colors" />
+                  </div>
+                  <span className="text-f-base text-white/80 group-hover:text-white transition-colors">{action.label}</span>
                 </a>
               )
             })}
@@ -409,7 +415,9 @@ export default function DashboardPage() {
       {/* Research Beats */}
       <GlassCard hover={false}>
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="h-4 w-4 text-white/40" />
+          <div className="h-7 w-7 rounded-[8px] flex items-center justify-center bg-[#F59E0B]/10 border border-[#F59E0B]/20">
+            <TrendingUp className="h-4 w-4 text-[#F59E0B]" />
+          </div>
           <h3 className="text-f-lg font-semibold text-white">Research Beats</h3>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -437,7 +445,9 @@ export default function DashboardPage() {
       <GlassCard hover={false}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-white/40" />
+            <div className="h-7 w-7 rounded-[8px] flex items-center justify-center bg-[#F59E0B]/10 border border-[#F59E0B]/20">
+              <Clock className="h-4 w-4 text-[#F59E0B]" />
+            </div>
             <h3 className="text-f-lg font-semibold text-white">Recent Activity</h3>
           </div>
           <div className="flex items-center gap-2 text-f-xs text-white/30">

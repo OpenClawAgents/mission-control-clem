@@ -90,28 +90,28 @@ export default function VideosPage() {
           value={loading ? '...' : String(videos.length)}
           change={videos.length > 0 ? 'cataloged' : 'Ready to add'}
           changeType={videos.length > 0 ? 'positive' : 'neutral'}
-          icon={<Video className="h-5 w-5" />}
+          icon={<Video />}
         />
         <MetricCard
           label="Tagged"
           value={String(taggedCount)}
           change={taggedCount > 0 ? `${Math.round((taggedCount / Math.max(videos.length, 1)) * 100)}%` : '0%'}
           changeType="neutral"
-          icon={<Tag className="h-5 w-5" />}
+          icon={<Tag />}
         />
         <MetricCard
           label="Transcribed"
           value={String(transcriptCount)}
           change={transcriptCount > 0 ? 'searchable' : 'Not yet'}
           changeType="neutral"
-          icon={<Film className="h-5 w-5" />}
+          icon={<Film />}
         />
         <MetricCard
           label="Total Duration"
           value={totalDuration > 0 ? formatDuration(totalDuration) : '0:00'}
           change="Combined"
           changeType="neutral"
-          icon={<Clock className="h-5 w-5" />}
+          icon={<Clock />}
         />
       </div>
 
@@ -171,7 +171,7 @@ export default function VideosPage() {
       {!loading && videos.length === 0 && (
         <GlassCard hover={false}>
           <EmptyState
-            icon={<HardDrive className="h-12 w-12" />}
+            icon={<HardDrive />}
             title="No videos cataloged yet"
             description="AirDrop footage to the Mac Mini and it'll auto-appear here once tagged. Or use the Add Video button above to add manually."
           />

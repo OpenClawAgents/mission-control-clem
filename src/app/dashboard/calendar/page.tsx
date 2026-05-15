@@ -182,28 +182,28 @@ export default function CalendarPage() {
           value={loading ? '...' : String(events.length)}
           change="This month"
           changeType="neutral"
-          icon={<Calendar className="h-5 w-5" />}
+          icon={<Calendar />}
         />
         <MetricCard
           label="Published"
           value={String(scheduledCount)}
           change="Content live"
           changeType="positive"
-          icon={<BookOpen className="h-5 w-5" />}
+          icon={<BookOpen />}
         />
         <MetricCard
           label="Automations"
           value={String(automationCount)}
           change="Active"
           changeType="neutral"
-          icon={<CalendarDays className="h-5 w-5" />}
+          icon={<CalendarDays />}
         />
         <MetricCard
           label="Digests"
           value={String(events.filter((e) => e.type === 'digest').length)}
           change="Scheduled"
           changeType="neutral"
-          icon={<Newspaper className="h-5 w-5" />}
+          icon={<Newspaper />}
         />
       </div>
 

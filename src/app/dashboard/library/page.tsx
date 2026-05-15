@@ -167,28 +167,28 @@ export default function LibraryPage() {
           value={loading ? '...' : String(items.length)}
           change={items.length > 0 ? `${publishedCount} published` : 'Start importing'}
           changeType={publishedCount > 0 ? 'positive' : 'neutral'}
-          icon={<BookOpen className="h-5 w-5" />}
+          icon={<BookOpen />}
         />
         <MetricCard
           label="Newsletters"
           value={String(typeCounts['newsletter'] || 0)}
           change="Repurpose ready"
           changeType="neutral"
-          icon={<Mail className="h-5 w-5" />}
+          icon={<Mail />}
         />
         <MetricCard
           label="Research"
           value={String(typeCounts['research'] || 0)}
           change="Source material"
           changeType="neutral"
-          icon={<Search className="h-5 w-5" />}
+          icon={<Search />}
         />
         <MetricCard
           label="Scripts"
           value={String(typeCounts['script'] || 0)}
           change="Video ready"
           changeType="neutral"
-          icon={<PenTool className="h-5 w-5" />}
+          icon={<PenTool />}
         />
       </div>
 

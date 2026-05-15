@@ -60,27 +60,27 @@ export default function ScriptsPage() {
         <MetricCard
           label="Total Scripts"
           value="0"
-          icon={<FileText className="h-5 w-5" />}
+          icon={<FileText />}
         />
         <MetricCard
           label="Ready to Shoot"
           value="0"
           change="Write your first"
           changeType="neutral"
-          icon={<Clapperboard className="h-5 w-5" />}
+          icon={<Clapperboard />}
         />
         <MetricCard
           label="Avg Hook Score"
           value="—"
           change="No data yet"
           changeType="neutral"
-          icon={<Target className="h-5 w-5" />}
+          icon={<Target />}
         />
       </div>
 
       <GlassCard hover={false}>
         <EmptyState
-          icon={<Sparkles className="h-12 w-12" />}
+          icon={<Sparkles />}
           title="No scripts yet"
           description="Create viral-ready scripts with hooks, angles, and shot lists. Repurpose from your content library or start fresh."
         />

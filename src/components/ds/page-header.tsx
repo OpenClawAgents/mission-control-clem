@@ -8,12 +8,17 @@ export interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, action }: PageHeaderProps) {
   return (
-    <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-      <div className="min-w-0">
-        <h1 className="text-f-3xl font-semibold leading-tight text-white">{title}</h1>
-        {subtitle ? <p className="mt-1 text-f-base text-white/65">{subtitle}</p> : null}
+    <div className="mb-8">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-f-3xl font-semibold leading-tight text-white">
+            <span className="mc-text-gradient">{title}</span>
+          </h1>
+          {subtitle ? <p className="mt-1 text-f-base text-white/65">{subtitle}</p> : null}
+        </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
       </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
+      <div className="mt-4 h-px bg-gradient-to-r from-[#F59E0B]/30 via-white/[0.06] to-transparent" />
     </div>
   )
 }

@@ -82,7 +82,7 @@ export default function DigestsPage() {
           value={loading ? '...' : String(digests.length)}
           change={todayCount > 0 ? `${todayCount} today` : 'No new today'}
           changeType={todayCount > 0 ? 'positive' : 'neutral'}
-          icon={<Newspaper className="h-5 w-5" />}
+          icon={<Newspaper />}
         />
         {(Object.entries(categoryConfig) as [DigestCategory, typeof categoryConfig[DigestCategory]][]).map(
           ([cat, config]) => {
@@ -143,7 +143,7 @@ export default function DigestsPage() {
       ) : digests.length === 0 ? (
         <GlassCard hover={false}>
           <EmptyState
-            icon={<Newspaper className="h-12 w-12" />}
+            icon={<Newspaper />}
             title="No digests yet"
             description="Track DEA scheduling changes, state-level reform, Church of Singularism rulings, and more. Use the New Digest button above to add entries."
           />

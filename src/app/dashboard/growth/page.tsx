@@ -132,28 +132,28 @@ export default function GrowthPage() {
           value={loading ? '...' : summary ? String(summary.total_followers) : '0'}
           change={summary && summary.total_gained > 0 ? `+${summary.total_gained} gained` : 'No data yet'}
           changeType={summary && summary.total_gained > 0 ? 'positive' : 'neutral'}
-          icon={<Users className="h-5 w-5" />}
+          icon={<Users />}
         />
         <MetricCard
           label="Avg Engagement"
           value={loading ? '...' : summary ? `${(summary.avg_engagement * 100).toFixed(1)}%` : '—'}
           change="Across platforms"
           changeType="neutral"
-          icon={<Heart className="h-5 w-5" />}
+          icon={<Heart />}
         />
         <MetricCard
           label="Platforms"
           value={loading ? '...' : summary ? String(summary.platforms.length) : '0'}
           change={summary ? `${summary.days_tracked}d tracked` : 'Add data'}
           changeType="neutral"
-          icon={<Eye className="h-5 w-5" />}
+          icon={<Eye />}
         />
         <MetricCard
           label="Impressions"
           value={loading ? '...' : metrics.length > 0 ? String(metrics.reduce((sum, m) => sum + (m.impressions || 0), 0)) : '0'}
           change="30 days"
           changeType="neutral"
-          icon={<BarChart3 className="h-5 w-5" />}
+          icon={<BarChart3 />}
         />
       </div>
 
@@ -166,7 +166,7 @@ export default function GrowthPage() {
       ) : metrics.length === 0 ? (
         <GlassCard hover={false}>
           <EmptyState
-            icon={<BarChart3 className="h-12 w-12" />}
+            icon={<BarChart3 />}
             title="No growth data yet"
             description="Start tracking your followers, engagement, and platform metrics. Add daily numbers to see trends over time."
           />

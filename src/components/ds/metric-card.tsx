@@ -41,7 +41,7 @@ export function MetricCard({
             </span>
             <span className="mt-1.5 text-f-xs sm:text-f-sm font-medium uppercase tracking-wider text-white/65">{label}</span>
           </div>
-          {icon ? <div className="text-white/70 shrink-0">{icon}</div> : null}
+          {icon ? <div className="shrink-0 h-9 w-9 rounded-[10px] bg-[#F59E0B]/10 border border-[#F59E0B]/20 flex items-center justify-center text-[#F59E0B] [&>svg]:h-[18px] [&>svg]:w-[18px]">{icon}</div> : null}
         </div>
         {change ? (
           <span className={cn('inline-flex w-fit items-center rounded-full px-2 py-0.5 text-f-xs sm:text-f-sm font-medium', changeStyles[changeType])}>

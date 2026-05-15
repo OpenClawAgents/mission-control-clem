@@ -340,26 +340,26 @@ export default function SkillsPage() {
         <MetricCard
           label="Total Skills"
           value={counts.total}
-          icon={<Activity className="h-5 w-5" />}
+          icon={<Activity />}
         />
         <MetricCard
           label="Active"
           value={counts.active}
           change={`${counts.active} running`}
           changeType="positive"
-          icon={<Play className="h-5 w-5" />}
+          icon={<Play />}
         />
         <MetricCard
           label="Disabled"
           value={counts.disabled}
-          icon={<Pause className="h-5 w-5" />}
+          icon={<Pause />}
         />
         <MetricCard
           label="On Schedule"
           value={counts.withCron}
           change="cron jobs"
           changeType="neutral"
-          icon={<Clock className="h-5 w-5" />}
+          icon={<Clock />}
         />
       </div>
 

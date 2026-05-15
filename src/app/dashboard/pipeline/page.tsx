@@ -127,28 +127,28 @@ export default function PipelinePage() {
           value={loading ? '...' : String(items.length)}
           change={`${totalActive} active`}
           changeType="neutral"
-          icon={<Rocket className="h-5 w-5" />}
+          icon={<Rocket />}
         />
         <MetricCard
           label="In Progress"
           value={String(inProgress)}
           change="Draft & review"
           changeType="neutral"
-          icon={<PenTool className="h-5 w-5" />}
+          icon={<PenTool />}
         />
         <MetricCard
           label="Published"
           value={String(pipelineItems.published.length)}
           change="Live"
           changeType="positive"
-          icon={<Globe className="h-5 w-5" />}
+          icon={<Globe />}
         />
         <MetricCard
           label="Ideas"
           value={String(pipelineItems.idea.length)}
           change="Backlog"
           changeType="neutral"
-          icon={<Lightbulb className="h-5 w-5" />}
+          icon={<Lightbulb />}
         />
       </div>
 

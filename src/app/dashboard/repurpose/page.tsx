@@ -111,28 +111,28 @@ export default function RepurposePage() {
           value={loading ? '...' : String(entries.length)}
           change="Repurposed"
           changeType="neutral"
-          icon={<Mail className="h-5 w-5" />}
+          icon={<Mail />}
         />
         <MetricCard
           label="Reel Scripts"
           value={String(totalScripts)}
           change="Generated"
           changeType="positive"
-          icon={<Film className="h-5 w-5" />}
+          icon={<Film />}
         />
         <MetricCard
           label="Carousels"
           value={String(totalCarousels)}
           change="Generated"
           changeType="neutral"
-          icon={<Share2 className="h-5 w-5" />}
+          icon={<Share2 />}
         />
         <MetricCard
           label="Captions"
           value={String(totalCaptions)}
           change="Generated"
           changeType="neutral"
-          icon={<PenTool className="h-5 w-5" />}
+          icon={<PenTool />}
         />
       </div>
 
@@ -145,7 +145,7 @@ export default function RepurposePage() {
       ) : entries.length === 0 ? (
         <GlassCard hover={false}>
           <EmptyState
-            icon={<Mail className="h-12 w-12" />}
+            icon={<Mail />}
             title="No repurposed content yet"
             description="Import a newsletter and generate reel scripts, carousels, and captions. Use the Repurpose Newsletter button above to get started."
           />

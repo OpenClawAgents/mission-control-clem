@@ -9,6 +9,7 @@ export interface GlassCardProps {
   hover?: boolean
   padding?: GlassCardPadding
   style?: React.CSSProperties
+  accent?: string // Optional left-border accent color
 }
 
 const paddingClasses: Record<GlassCardPadding, string> = {
@@ -23,10 +24,15 @@ export function GlassCard({
   hover = true,
   padding = 'md',
   style,
+  accent,
 }: GlassCardProps) {
+  // If accent color provided, add left border via box-shadow trick
+  const accentStyle = accent
+    ? { ...style, borderLeft: `3px solid ${accent}` }
+    : style
   return (
     <div
-      style={style}
+      style={accentStyle}
       className={cn(
         'glass-card rounded-[14px] overflow-hidden',
         paddingClasses[padding],
