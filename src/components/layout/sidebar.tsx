@@ -14,6 +14,8 @@ import {
   FileText,
   Settings,
   Menu,
+  Library,
+  Columns3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -47,6 +49,8 @@ const sections: NavSection[] = [
   {
     title: 'Workspace',
     items: [
+      { label: 'Digital Library', href: '/dashboard/library', icon: Library },
+      { label: 'Pipeline', href: '/dashboard/pipeline', icon: Columns3 },
       { label: 'Content Library', href: '/dashboard/content', icon: BookOpen },
       { label: 'Video Catalog', href: '/dashboard/videos', icon: Video },
       { label: 'Digests', href: '/dashboard/digests', icon: Newspaper },
