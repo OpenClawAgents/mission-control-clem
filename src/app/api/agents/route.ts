@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { listAgents, listCronJobs, listSessions, checkGatewayConnection } from '@/lib/openclaw'
+import { listAgents, listCronJobs, listSessions } from '@/lib/openclaw'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,18 +16,7 @@ const KNOWN_AGENTS = [
 
 export async function GET() {
   try {
-    // Check if Gateway is reachable first
-    const gw = await checkGatewayConnection()
-    if (!gw.reachable) {
-      return NextResponse.json({
-        ok: false,
-        error: `Gateway not reachable at ${gw.baseUrl}`,
-        hint: 'The dashboard must be running on the same machine as the OpenClaw Gateway, or OPENCLAW_GATEWAY_HOST must point to it.',
-        agents: [],
-      }, { status: 503 })
-    }
-
-    // Try CLI first (works locally), fall back to known agents (for Vercel)
+    // Try CLI first (works locally), fall back to proxy (for Vercel), then known agents
     let agents = await listAgents()
     if (agents.length === 0) {
       agents = KNOWN_AGENTS.map(a => ({ ...a, workspace: undefined, model: undefined, routing: undefined }))

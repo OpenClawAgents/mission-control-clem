@@ -1,21 +1,10 @@
 import { NextResponse } from 'next/server'
-import { listSessions, getSessionStatus, checkGatewayConnection } from '@/lib/openclaw'
+import { listSessions, getSessionStatus } from '@/lib/openclaw'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const gw = await checkGatewayConnection()
-    if (!gw.reachable) {
-      return NextResponse.json({
-        ok: false,
-        error: `Gateway not reachable at ${gw.baseUrl}`,
-        hint: 'The dashboard must be running on the same machine as the OpenClaw Gateway.',
-        sessions: [],
-        mainStatus: null,
-      }, { status: 503 })
-    }
-
     const [sessions, mainStatus] = await Promise.all([
       listSessions(),
       getSessionStatus('main').catch(() => null),

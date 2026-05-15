@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { listAgents, checkGatewayConnection } from '@/lib/openclaw'
+import { listAgents } from '@/lib/openclaw'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,15 +13,6 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET() {
   try {
-    const gw = await checkGatewayConnection()
-    if (!gw.reachable) {
-      return NextResponse.json({
-        ok: false,
-        error: `Gateway not reachable at ${gw.baseUrl}`,
-        agents: [],
-      }, { status: 503 })
-    }
-
     const agents = await listAgents()
     return NextResponse.json({ ok: true, agents })
   } catch (err: unknown) {
