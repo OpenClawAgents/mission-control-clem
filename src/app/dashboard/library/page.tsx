@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, MetricCard } from '@/components/ds'
+import { CreateModal } from '@/components/create-modal'
 import { BookOpen, Search, Tag, FileText, Newspaper, Mail, Video, PenTool, Share2, Upload, Sparkles } from 'lucide-react'
 import { getContent, type ContentItem, type ContentType, type ContentStatus } from '@/lib/api'
 
@@ -122,10 +123,41 @@ export default function LibraryPage() {
         title="Digital Library"
         subtitle="Your knowledge nucleus — newsletters, research, scripts, and more"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <Upload className="h-4 w-4" />
-            Import
-          </button>
+          <CreateModal
+            triggerLabel="Import"
+            triggerIcon={Upload}
+            title="Import to Library"
+            description="Add a newsletter, script, research, or other content to the digital library"
+            fields={[
+              { name: 'title', label: 'Title', type: 'text', placeholder: 'Newsletter: Psychedelic Church & RFRA...', required: true },
+              { name: 'type', label: 'Type', type: 'select', required: true, options: [
+                { value: 'newsletter', label: 'Newsletter' },
+                { value: 'script', label: 'Script' },
+                { value: 'social_post', label: 'Social Post' },
+                { value: 'research', label: 'Research' },
+                { value: 'digest', label: 'Digest' },
+                { value: 'video_clip', label: 'Video Clip' },
+                { value: 'draft', label: 'Draft' },
+              ]},
+              { name: 'tags', label: 'Tags (comma-separated)', type: 'text', placeholder: 'psychedelic law, church, RFRA' },
+              { name: 'source_url', label: 'Source URL', type: 'text', placeholder: 'https://...' },
+              { name: 'body', label: 'Content', type: 'textarea', placeholder: 'Paste the content here...', rows: 5 },
+            ]}
+            onSubmit={async (values) => {
+              const res = await fetch('/api/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ...values,
+                  user_id: '00000000-0000-0000-0000-000000000000', // placeholder
+                  tags: values.tags ? values.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
+                  status: 'draft',
+                }),
+              })
+              if (!res.ok) throw new Error('Failed to import')
+              window.location.reload()
+            }}
+          />
         }
       />
 

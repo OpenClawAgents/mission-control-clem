@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, MetricCard, StatusDot } from '@/components/ds'
 import { Calendar, Plus, Clock, ChevronLeft, ChevronRight, Newspaper, Zap, BookOpen } from 'lucide-react'
+import { CreateModal } from '@/components/create-modal'
 import { getContent, type ContentItem } from '@/lib/api'
 
 interface CronJob {
@@ -140,10 +141,38 @@ export default function CalendarPage() {
         title="Calendar"
         subtitle="Content schedule, digest delivery, and automations"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <Plus className="h-4 w-4" />
-            Schedule
-          </button>
+          <CreateModal
+            triggerLabel="Schedule"
+            triggerIcon={Plus}
+            title="Schedule Content"
+            description="Schedule a content piece for publication"
+            fields={[
+              { name: 'title', label: 'Title', type: 'text', placeholder: 'Church & RFRA reel', required: true },
+              { name: 'type', label: 'Content Type', type: 'select', required: true, options: [
+                { value: 'social_post', label: 'Social Post' },
+                { value: 'script', label: 'Script' },
+                { value: 'newsletter', label: 'Newsletter' },
+                { value: 'video_clip', label: 'Video Clip' },
+              ]},
+              { name: 'publish_date', label: 'Publish Date', type: 'text', placeholder: '2025-06-01', required: true },
+              { name: 'tags', label: 'Tags (comma-separated)', type: 'text', placeholder: 'church, RFRA, psychedelic' },
+            ]}
+            onSubmit={async (values) => {
+              const res = await fetch('/api/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ...values,
+                  user_id: '00000000-0000-0000-0000-000000000000',
+                  tags: values.tags ? values.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
+                  status: 'draft',
+                  pipeline_stage: 'scheduled',
+                }),
+              })
+              if (!res.ok) throw new Error('Failed to schedule content')
+              window.location.reload()
+            }}
+          />
         }
       />
 

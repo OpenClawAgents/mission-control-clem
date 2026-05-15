@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, MetricCard, EmptyState } from '@/components/ds'
 import { BookOpen, ArrowRight, Sparkles, Plus, FileText, Film, Share2, PenTool } from 'lucide-react'
+import { CreateModal } from '@/components/create-modal'
 
 interface ReelScript {
   hook: string
@@ -76,10 +77,31 @@ export default function RepurposePage() {
         title="Newsletter Repurposing"
         subtitle="Transform newsletters into reels, carousels, and captions"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <Plus className="h-4 w-4" />
-            Repurpose Newsletter
-          </button>
+          <CreateModal
+            triggerLabel="Repurpose Newsletter"
+            triggerIcon={Plus}
+            title="Repurpose Newsletter"
+            description="Import a newsletter and generate reel scripts, carousels, and captions"
+            fields={[
+              { name: 'source_title', label: 'Newsletter Title', type: 'text', placeholder: 'Issue #42: Psychedelic Church Update', required: true },
+              { name: 'source_theme', label: 'Theme', type: 'text', placeholder: 'RFRA protections, psychedelic therapy' },
+              { name: 'newsletter_text', label: 'Newsletter Content', type: 'textarea', placeholder: 'Paste the full newsletter text here...', rows: 8, required: true },
+            ]}
+            onSubmit={async (values) => {
+              const res = await fetch('/api/repurpose', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  source_title: values.source_title,
+                  source_theme: values.source_theme || null,
+                  theme_tags: values.source_theme ? values.source_theme.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
+                  newsletter_text: values.newsletter_text,
+                }),
+              })
+              if (!res.ok) throw new Error('Failed to repurpose newsletter')
+              window.location.reload()
+            }}
+          />
         }
       />
 
@@ -125,13 +147,7 @@ export default function RepurposePage() {
           <EmptyState
             icon={<BookOpen className="h-12 w-12" />}
             title="No repurposed content yet"
-            description="Import a newsletter and generate 5 reel scripts, 5 carousel posts, and 5 short-form captions — all tailored to each platform's native voice."
-            action={
-              <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-                <Sparkles className="h-4 w-4" />
-                Repurpose First Newsletter
-              </button>
-            }
+            description="Import a newsletter and generate reel scripts, carousels, and captions. Use the Repurpose Newsletter button above to get started."
           />
         </GlassCard>
       ) : (

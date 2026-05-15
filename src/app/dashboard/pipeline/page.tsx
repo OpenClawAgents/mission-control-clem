@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, StatusDot, MetricCard } from '@/components/ds'
+import { CreateModal } from '@/components/create-modal'
 import { Plus, Lightbulb, PenTool, Camera, Film, Calendar, Globe, BarChart3, Sparkles } from 'lucide-react'
 import { getContent, type ContentItem, type ContentType, type ContentStatus } from '@/lib/api'
 
@@ -85,10 +86,38 @@ export default function PipelinePage() {
         title="Content Pipeline"
         subtitle="Track content from idea to published"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <Plus className="h-4 w-4" />
-            New Idea
-          </button>
+          <CreateModal
+            triggerLabel="New Idea"
+            triggerIcon={Plus}
+            title="Add Content Idea"
+            description="Start a new content idea in the pipeline"
+            fields={[
+              { name: 'title', label: 'Title', type: 'text', placeholder: 'RFRA protections for psychedelic churches', required: true },
+              { name: 'type', label: 'Type', type: 'select', required: true, options: [
+                { value: 'draft', label: 'Idea' },
+                { value: 'script', label: 'Script' },
+                { value: 'social_post', label: 'Social Post' },
+                { value: 'newsletter', label: 'Newsletter' },
+                { value: 'research', label: 'Research' },
+              ]},
+              { name: 'tags', label: 'Tags (comma-separated)', type: 'text', placeholder: 'psychedelic law, church, content angle' },
+            ]}
+            onSubmit={async (values) => {
+              const res = await fetch('/api/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ...values,
+                  user_id: '00000000-0000-0000-0000-000000000000',
+                  tags: values.tags ? values.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
+                  status: 'draft',
+                  pipeline_stage: 'idea',
+                }),
+              })
+              if (!res.ok) throw new Error('Failed to create idea')
+              window.location.reload()
+            }}
+          />
         }
       />
 

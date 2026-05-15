@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, MetricCard, EmptyState, StatusDot } from '@/components/ds'
-import { TrendingUp, Hash, Music, Users, Flame, ExternalLink, Sparkles, RefreshCw } from 'lucide-react'
+import { TrendingUp, Hash, Music, Users, Flame, ExternalLink, Sparkles, RefreshCw, Plus } from 'lucide-react'
+import { CreateModal } from '@/components/create-modal'
 
 interface TrendItem {
   name: string
@@ -82,10 +83,49 @@ export default function TrendingPage() {
         title="Trending Scanner"
         subtitle="Track trending sounds, hashtags, challenges, and creators"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <RefreshCw className="h-4 w-4" />
-            Scan Now
-          </button>
+          <CreateModal
+            triggerLabel="Log Trend"
+            triggerIcon={Plus}
+            title="Log Trending Data"
+            description="Manually add a trending scan result"
+            fields={[
+              { name: 'platform', label: 'Platform', type: 'select', required: true, options: [
+                { value: 'instagram', label: 'Instagram' },
+                { value: 'tiktok', label: 'TikTok' },
+                { value: 'youtube', label: 'YouTube' },
+                { value: 'twitter', label: 'Twitter/X' },
+                { value: 'general', label: 'General' },
+              ]},
+              { name: 'scan_type', label: 'Type', type: 'select', required: true, options: [
+                { value: 'sounds', label: 'Sounds' },
+                { value: 'hashtags', label: 'Hashtags' },
+                { value: 'challenges', label: 'Challenges' },
+                { value: 'creators', label: 'Creators' },
+                { value: 'topics', label: 'Topics' },
+              ]},
+              { name: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Trend details, items found...', rows: 3 },
+              { name: 'source_url', label: 'Source URL', type: 'text', placeholder: 'https://...' },
+            ]}
+            onSubmit={async (values) => {
+              const items = values.notes ? values.notes.split('\n').filter(Boolean).map((line: string, i: number) => ({
+                name: line.replace(/^[-*\d.]\s*/, '').trim(),
+                trend_score: Math.max(0, 100 - i * 10),
+              })) : []
+              const res = await fetch('/api/trending', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  platform: values.platform,
+                  scan_type: values.scan_type,
+                  items,
+                  source_url: values.source_url || null,
+                  notes: values.notes || null,
+                }),
+              })
+              if (!res.ok) throw new Error('Failed to log trend')
+              window.location.reload()
+            }}
+          />
         }
       />
 
@@ -161,13 +201,7 @@ export default function TrendingPage() {
           <EmptyState
             icon={<TrendingUp className="h-12 w-12" />}
             title="No trending data yet"
-            description="Set up the trending scanner to automatically detect trending sounds, hashtags, and challenges across platforms. Configure priority channels to watch specific creators."
-            action={
-              <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-                <RefreshCw className="h-4 w-4" />
-                Set Up Scanner
-              </button>
-            }
+            description="Set up the trending scanner to automatically detect trending sounds, hashtags, and challenges across platforms. Use the Log Trend button above to manually add data."
           />
         </GlassCard>
       ) : (

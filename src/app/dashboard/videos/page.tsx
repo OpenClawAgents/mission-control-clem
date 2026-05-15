@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, EmptyState, MetricCard } from '@/components/ds'
 import { Video, Plus, Clock, HardDrive, Tag, Film, Search } from 'lucide-react'
 import { getVideos, type Video as VideoType } from '@/lib/api'
+import { CreateModal } from '@/components/create-modal'
 
 function formatDuration(seconds: number | null): string {
   if (!seconds) return '—'
@@ -54,10 +55,32 @@ export default function VideosPage() {
         title="Video Catalog"
         subtitle="Raw footage, clips, and tagged video assets"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <Plus className="h-4 w-4" />
-            Add Video
-          </button>
+          <CreateModal
+            triggerLabel="Add Video"
+            triggerIcon={Plus}
+            title="Add Video to Catalog"
+            description="Manually add a video file to the catalog"
+            fields={[
+              { name: 'title', label: 'Title', type: 'text', placeholder: 'Interview with church founder...', required: true },
+              { name: 'file_path', label: 'File Path', type: 'text', placeholder: '/Volumes/ClemVideo/RawFootage/clip.mp4', required: true },
+              { name: 'duration_seconds', label: 'Duration (seconds)', type: 'number', placeholder: '120' },
+              { name: 'tags', label: 'Tags (comma-separated)', type: 'text', placeholder: 'interview, church, RFRA' },
+            ]}
+            onSubmit={async (values) => {
+              const res = await fetch('/api/videos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ...values,
+                  user_id: '00000000-0000-0000-0000-000000000000',
+                  duration_seconds: values.duration_seconds ? parseInt(values.duration_seconds) : null,
+                  tags: values.tags ? values.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
+                }),
+              })
+              if (!res.ok) throw new Error('Failed to add video')
+              window.location.reload()
+            }}
+          />
         }
       />
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, EmptyState, MetricCard } from '@/components/ds'
 import { BookOpen, Plus, Search, Mail, PenTool, Share2, FileText, Tag } from 'lucide-react'
 import { getContent, type ContentItem, type ContentType, type ContentStatus } from '@/lib/api'
+import { CreateModal } from '@/components/create-modal'
 
 const typeConfig: Record<ContentType, { icon: typeof BookOpen; label: string; color: string }> = {
   newsletter: { icon: Mail, label: 'Newsletter', color: '#F59E0B' },
@@ -63,10 +64,45 @@ export default function ContentPage() {
         title="Content Library"
         subtitle="All your newsletters, scripts, posts, and research"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <Plus className="h-4 w-4" />
-            New Content
-          </button>
+          <CreateModal
+            triggerLabel="New Content"
+            triggerIcon={Plus}
+            title="Create Content"
+            description="Add a new piece of content to the library"
+            fields={[
+              { name: 'title', label: 'Title', type: 'text', placeholder: 'My newsletter issue...', required: true },
+              { name: 'type', label: 'Type', type: 'select', required: true, options: [
+                { value: 'newsletter', label: 'Newsletter' },
+                { value: 'script', label: 'Script' },
+                { value: 'social_post', label: 'Social Post' },
+                { value: 'research', label: 'Research' },
+                { value: 'digest', label: 'Digest' },
+                { value: 'video_clip', label: 'Video Clip' },
+                { value: 'draft', label: 'Draft' },
+              ]},
+              { name: 'status', label: 'Status', type: 'select', required: true, options: [
+                { value: 'draft', label: 'Draft' },
+                { value: 'review', label: 'Review' },
+                { value: 'published', label: 'Published' },
+              ], defaultValue: 'draft' },
+              { name: 'tags', label: 'Tags (comma-separated)', type: 'text', placeholder: 'psychedelic law, church' },
+              { name: 'source_url', label: 'Source URL', type: 'text', placeholder: 'https://...' },
+              { name: 'body', label: 'Content', type: 'textarea', placeholder: 'Paste or write content...', rows: 5 },
+            ]}
+            onSubmit={async (values) => {
+              const res = await fetch('/api/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ...values,
+                  user_id: '00000000-0000-0000-0000-000000000000',
+                  tags: values.tags ? values.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
+                }),
+              })
+              if (!res.ok) throw new Error('Failed to create content')
+              window.location.reload()
+            }}
+          />
         }
       />
 

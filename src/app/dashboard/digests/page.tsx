@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, EmptyState, MetricCard, StatusDot } from '@/components/ds'
 import { Newspaper, Plus, ExternalLink, Calendar, Tag } from 'lucide-react'
 import { getDigests, type Digest, type DigestCategory } from '@/lib/api'
+import { CreateModal } from '@/components/create-modal'
 
 const categoryConfig: Record<DigestCategory, { label: string; color: string }> = {
   psychedelic_law: { label: 'Psychedelic Law', color: '#A855F7' },
@@ -40,10 +41,38 @@ export default function DigestsPage() {
         title="Digests"
         subtitle="Psychedelic law, church news, and policy updates"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <Plus className="h-4 w-4" />
-            New Digest
-          </button>
+          <CreateModal
+            triggerLabel="New Digest"
+            triggerIcon={Plus}
+            title="Create Digest Entry"
+            description="Add a new news item or policy update to the digest"
+            fields={[
+              { name: 'title', label: 'Title', type: 'text', placeholder: 'Oregon psilocybin law update...', required: true },
+              { name: 'category', label: 'Category', type: 'select', required: true, options: [
+                { value: 'psychedelic_law', label: 'Psychedelic Law' },
+                { value: 'church', label: 'Church' },
+                { value: 'trust_law', label: 'Trust Law' },
+                { value: 'neurodivergence', label: 'Neurodivergence' },
+                { value: 'community', label: 'Community' },
+                { value: 'policy', label: 'Policy' },
+              ]},
+              { name: 'source_url', label: 'Source URL', type: 'text', placeholder: 'https://...' },
+              { name: 'summary', label: 'Summary', type: 'textarea', placeholder: 'Key points and takeaways...', rows: 4, required: true },
+            ]}
+            onSubmit={async (values) => {
+              const res = await fetch('/api/digests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ...values,
+                  user_id: '00000000-0000-0000-0000-000000000000',
+                  sent: false,
+                }),
+              })
+              if (!res.ok) throw new Error('Failed to create digest')
+              window.location.reload()
+            }}
+          />
         }
       />
 

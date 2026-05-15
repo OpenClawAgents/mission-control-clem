@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, MetricCard, EmptyState } from '@/components/ds'
-import { TrendingUp, Users, Eye, Heart, ArrowUpRight, ArrowDownRight, Sparkles, Film, Hash, Star } from 'lucide-react'
+import { TrendingUp, Users, Eye, Heart, ArrowUpRight, ArrowDownRight, Sparkles, Film, Hash, Star, Plus } from 'lucide-react'
+import { CreateModal } from '@/components/create-modal'
 
 interface GrowthMetric {
   id: string
@@ -81,10 +82,47 @@ export default function GrowthPage() {
         title="Growth Metrics"
         subtitle="Track followers, engagement, and platform performance"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <ArrowUpRight className="h-4 w-4" />
-            Add Metrics
-          </button>
+          <CreateModal
+            triggerLabel="Add Metrics"
+            triggerIcon={Plus}
+            title="Add Growth Metrics"
+            description="Log today’s follower counts and engagement data for a platform"
+            fields={[
+              { name: 'platform', label: 'Platform', type: 'select', required: true, options: [
+                { value: 'instagram', label: 'Instagram' },
+                { value: 'tiktok', label: 'TikTok' },
+                { value: 'youtube', label: 'YouTube' },
+                { value: 'twitter', label: 'Twitter/X' },
+                { value: 'facebook', label: 'Facebook' },
+                { value: 'newsletter', label: 'Newsletter' },
+              ]},
+              { name: 'followers', label: 'Total Followers', type: 'number', placeholder: '12500' },
+              { name: 'followers_gained', label: 'Followers Gained (today)', type: 'number', placeholder: '45' },
+              { name: 'impressions', label: 'Impressions', type: 'number', placeholder: '8200' },
+              { name: 'reach', label: 'Reach', type: 'number', placeholder: '5100' },
+              { name: 'engagement_rate', label: 'Engagement Rate (%)', type: 'number', placeholder: '4.2' },
+              { name: 'posts_count', label: 'Posts This Period', type: 'number', placeholder: '3' },
+              { name: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Any observations...', rows: 2 },
+            ]}
+            onSubmit={async (values) => {
+              const res = await fetch('/api/growth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  platform: values.platform,
+                  followers: values.followers ? parseInt(values.followers) : null,
+                  followers_gained: values.followers_gained ? parseInt(values.followers_gained) : 0,
+                  impressions: values.impressions ? parseInt(values.impressions) : 0,
+                  reach: values.reach ? parseInt(values.reach) : 0,
+                  engagement_rate: values.engagement_rate ? parseFloat(values.engagement_rate) / 100 : null,
+                  posts_count: values.posts_count ? parseInt(values.posts_count) : 0,
+                  notes: values.notes || null,
+                }),
+              })
+              if (!res.ok) throw new Error('Failed to add metrics')
+              window.location.reload()
+            }}
+          />
         }
       />
 
@@ -131,12 +169,6 @@ export default function GrowthPage() {
             icon={<TrendingUp className="h-12 w-12" />}
             title="No growth data yet"
             description="Start tracking your followers, engagement, and platform metrics. Add daily numbers to see trends over time."
-            action={
-              <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-                <ArrowUpRight className="h-4 w-4" />
-                Add First Metric
-              </button>
-            }
           />
         </GlassCard>
       ) : (
