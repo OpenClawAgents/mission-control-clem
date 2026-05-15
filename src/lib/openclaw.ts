@@ -199,3 +199,15 @@ export async function runCronJob(jobId: string): Promise<void> {
 export async function deleteCronJob(jobId: string): Promise<void> {
   await runCLI(['cron', 'remove', jobId])
 }
+
+/** Create a new cron job via the Gateway tool API */
+export async function createCronJob(opts: { name: string; schedule: string; message: string }): Promise<unknown> {
+  return invokeTool('cron', 'add', {
+    name: opts.name,
+    schedule: { kind: 'cron', expr: opts.schedule, tz: 'America/Chicago' },
+    payload: { kind: 'agentTurn', message: opts.message, lightContext: true },
+    delivery: { mode: 'announce' },
+    sessionTarget: 'isolated',
+    enabled: true,
+  })
+}

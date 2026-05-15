@@ -173,13 +173,7 @@ export default function VideosPage() {
           <EmptyState
             icon={<HardDrive className="h-12 w-12" />}
             title="No videos cataloged yet"
-            description="AirDrop footage to the Mac Mini and it'll auto-appear here once tagged. Or add videos manually to start building your catalog."
-            action={
-              <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-                <Plus className="h-4 w-4" />
-                Add First Video
-              </button>
-            }
+            description="AirDrop footage to the Mac Mini and it'll auto-appear here once tagged. Or use the Add Video button above to add manually."
           />
         </GlassCard>
       )}

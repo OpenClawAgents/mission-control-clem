@@ -145,13 +145,7 @@ export default function DigestsPage() {
           <EmptyState
             icon={<Newspaper className="h-12 w-12" />}
             title="No digests yet"
-            description="Track DEA scheduling changes, state-level reform, Church of Singularism rulings, and more."
-            action={
-              <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-                <Plus className="h-4 w-4" />
-                Create First Digest
-              </button>
-            }
+            description="Track DEA scheduling changes, state-level reform, Church of Singularism rulings, and more. Use the New Digest button above to add entries."
           />
         </GlassCard>
       ) : (

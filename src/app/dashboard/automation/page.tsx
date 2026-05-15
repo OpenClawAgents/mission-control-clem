@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, EmptyState, MetricCard, StatusDot } from '@/components/ds'
 import { Zap, Plus, Clock, Play, Pause, RefreshCw, ExternalLink, Loader2 } from 'lucide-react'
+import { CreateModal } from '@/components/create-modal'
 
 interface CronJob {
   id: string
@@ -92,10 +93,37 @@ export default function AutomationPage() {
         title="Automation Hub"
         subtitle="Manage cron jobs, scheduled tasks, and automated workflows"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <Plus className="h-4 w-4" />
-            New Automation
-          </button>
+          <CreateModal
+            triggerLabel="New Automation"
+            triggerIcon={Plus}
+            title="Create Automation"
+            description="Describe what you want automated. The system will set up the cron job for you."
+            fields={[
+              { name: 'name', label: 'Job Name', type: 'text', placeholder: 'Daily Psychedelic Law Digest', required: true },
+              { name: 'schedule', label: 'Schedule', type: 'select', required: true, options: [
+                { value: '0 9 * * *', label: 'Daily at 9:00 AM' },
+                { value: '0 6 * * *', label: 'Daily at 6:00 AM' },
+                { value: '0 9 * * 1', label: 'Weekly Monday 9:00 AM' },
+                { value: '0 18 * * *', label: 'Daily at 6:00 PM' },
+                { value: '0 9,18 * * *', label: 'Twice daily (9 AM + 6 PM)' },
+              ]},
+              { name: 'message', label: 'What should it do?', type: 'textarea', placeholder: 'Search for latest psychedelic law news and create a digest entry...', rows: 4, required: true },
+            ]}
+            onSubmit={async (values) => {
+              const res = await fetch('/api/cron', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'create',
+                  name: values.name,
+                  schedule: values.schedule,
+                  message: values.message,
+                }),
+              })
+              if (!res.ok) throw new Error('Failed to create automation')
+              window.location.reload()
+            }}
+          />
         }
       />
 
@@ -141,13 +169,7 @@ export default function AutomationPage() {
           <EmptyState
             icon={<Zap className="h-12 w-12" />}
             title="No automations yet"
-            description="Set up cron jobs for daily digests, content scheduling, and recurring tasks. Describe what you want automated and the system will configure it."
-            action={
-              <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-                <Plus className="h-4 w-4" />
-                Create Automation
-              </button>
-            }
+            description="Set up cron jobs for daily digests, content scheduling, and recurring tasks. Use the New Automation button above to create one."
           />
         </GlassCard>
       ) : (

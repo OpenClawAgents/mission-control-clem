@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { listCronJobs, runCronJob, setJobEnabled, deleteCronJob } from '@/lib/openclaw'
+import { listCronJobs, runCronJob, setJobEnabled, deleteCronJob, createCronJob } from '@/lib/openclaw'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +28,15 @@ export async function POST(request: NextRequest) {
     if (action === 'setEnabled' && jobId && typeof enabled === 'boolean') {
       await setJobEnabled(jobId, enabled)
       return NextResponse.json({ ok: true, action: 'setEnabled', jobId, enabled })
+    }
+
+    if (action === 'create') {
+      const { name, schedule, message } = body as { action: string; name?: string; schedule?: string; message?: string }
+      if (!name || !schedule || !message) {
+        return NextResponse.json({ ok: false, error: 'Missing required fields: name, schedule, message' }, { status: 400 })
+      }
+      const job = await createCronJob({ name, schedule, message })
+      return NextResponse.json({ ok: true, action: 'create', job })
     }
 
     if (action === 'remove' && jobId) {

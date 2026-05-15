@@ -1,17 +1,58 @@
+'use client'
+
+import { useState } from 'react'
 import { PageHeader, GlassCard, EmptyState, MetricCard } from '@/components/ds'
+import { CreateModal } from '@/components/create-modal'
 import { FileText, Plus, Sparkles, Target, Clapperboard } from 'lucide-react'
 
 export default function ScriptsPage() {
+  const [created, setCreated] = useState(false)
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Scripts"
         subtitle="Viral-ready scripts with hooks, angles, and shot lists"
         action={
-          <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-            <Plus className="h-4 w-4" />
-            New Script
-          </button>
+          <CreateModal
+            triggerLabel="New Script"
+            triggerIcon={Plus}
+            title="Write Script"
+            description="Create a new video or content script"
+            fields={[
+              { name: 'title', label: 'Script Title', type: 'text', placeholder: 'Why RFRA protects psychedelic churches', required: true },
+              { name: 'type', label: 'Format', type: 'select', required: true, options: [
+                { value: 'reel', label: 'Reel (60s)' },
+                { value: 'short', label: 'Short (3min)' },
+                { value: 'long', label: 'Long-form (10min+)' },
+                { value: 'carousel', label: 'Carousel' },
+              ]},
+              { name: 'hook', label: 'Hook / Opening Line', type: 'text', placeholder: 'What if your church was illegal?' },
+              { name: 'body', label: 'Script Content', type: 'textarea', placeholder: 'Write your script here...', rows: 8 },
+              { name: 'tags', label: 'Tags (comma-separated)', type: 'text', placeholder: 'psychedelic law, church, RFRA' },
+            ]}
+            onSubmit={async (values) => {
+              const res = await fetch('/api/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  title: values.title,
+                  type: 'script',
+                  user_id: '00000000-0000-0000-0000-000000000000',
+                  status: 'draft',
+                  tags: values.tags ? values.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
+                  body: {
+                    format: values.type,
+                    hook: values.hook || undefined,
+                    script: values.body || undefined,
+                  },
+                }),
+              })
+              if (!res.ok) throw new Error('Failed to create script')
+              setCreated(true)
+              window.location.reload()
+            }}
+          />
         }
       />
 
@@ -42,12 +83,6 @@ export default function ScriptsPage() {
           icon={<Sparkles className="h-12 w-12" />}
           title="No scripts yet"
           description="Create viral-ready scripts with hooks, angles, and shot lists. Repurpose from your content library or start fresh."
-          action={
-            <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-              <Plus className="h-4 w-4" />
-              Write Your First Script
-            </button>
-          }
         />
       </GlassCard>
     </div>

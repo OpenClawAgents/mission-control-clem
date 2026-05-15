@@ -225,13 +225,7 @@ export default function ContentPage() {
           <EmptyState
             icon={<BookOpen className="h-12 w-12" />}
             title="No content yet"
-            description="Start adding newsletters, scripts, research, and social posts to your library."
-            action={
-              <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-                <Plus className="h-4 w-4" />
-                Add Content
-              </button>
-            }
+            description="Start adding newsletters, scripts, research, and social posts to your library. Use the New Content button above to get started."
           />
         </GlassCard>
       )}
