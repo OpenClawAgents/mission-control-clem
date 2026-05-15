@@ -134,7 +134,7 @@ export default function SkillsPage() {
         <GlassCard hover={false}>
           <div className="py-4 text-center">
             <p className="text-f-sm text-[#EF4444]">Failed to load agents: {error}</p>
-            <p className="text-f-xs text-white/40 mt-1">Make sure the Gateway is running on the same machine</p>
+            <p className="text-f-xs text-white/40 mt-1">The dashboard server or Gateway may be temporarily unavailable</p>
           </div>
         </GlassCard>
       )}
