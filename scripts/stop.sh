@@ -6,24 +6,18 @@ PID_DIR="$PROJECT_DIR/pids"
 
 echo "Stopping Mission Control..."
 
-# Kill Next.js
-if [ -f "$PID_DIR/next.pid" ]; then
-  PID=$(cat "$PID_DIR/next.pid")
-  kill "$PID" 2>/dev/null && echo "Next.js stopped (PID: $PID)" || echo "Next.js already stopped"
-  rm -f "$PID_DIR/next.pid"
-fi
+for pidfile in next.pid cloudflared.pid gateway-tunnel.pid; do
+  if [ -f "$PID_DIR/$pidfile" ]; then
+    PID=$(cat "$PID_DIR/$pidfile")
+    kill "$PID" 2>/dev/null && echo "Stopped $pidfile (PID: $PID)" || echo "$pidfile already stopped"
+    rm -f "$PID_DIR/$pidfile"
+  fi
+done
 
-# Kill Cloudflare Tunnel
-if [ -f "$PID_DIR/cloudflared.pid" ]; then
-  PID=$(cat "$PID_DIR/cloudflared.pid")
-  kill "$PID" 2>/dev/null && echo "Cloudflare Tunnel stopped (PID: $PID)" || echo "Cloudflare Tunnel already stopped"
-  rm -f "$PID_DIR/cloudflared.pid"
-fi
-
-# Also kill any leftover processes on port 3000
+# Also kill any leftover processes
 lsof -ti:3000 2>/dev/null | xargs kill 2>/dev/null || true
 pkill -f "cloudflared tunnel" 2>/dev/null || true
 
-rm -f "$PID_DIR/tunnel-url.txt"
+rm -f "$PID_DIR/dashboard-url.txt" "$PID_DIR/gateway-url.txt"
 
 echo "Mission Control stopped."
