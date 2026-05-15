@@ -142,6 +142,7 @@ export async function getGatewayStatus(): Promise<Record<string, unknown>> {
 
 export interface CronJob {
   id: string
+  agentId?: string
   name?: string
   description?: string
   enabled: boolean
@@ -149,6 +150,12 @@ export interface CronJob {
   payload: { kind: string; [key: string]: unknown }
   delivery?: { mode: string; [key: string]: unknown }
   sessionTarget?: string
+  state?: {
+    lastRunAtMs?: number
+    lastRunStatus?: string
+    nextRunAtMs?: number
+    [key: string]: unknown
+  }
   lastRunAt?: number
   nextRunAt?: number
 }
@@ -210,4 +217,28 @@ export async function createCronJob(opts: { name: string; schedule: string; mess
     sessionTarget: 'isolated',
     enabled: true,
   })
+}
+
+// ---------------------------------------------------------------------------
+// Agent management via CLI
+// ---------------------------------------------------------------------------
+
+export interface AgentInfo {
+  agentId: string
+  name?: string
+  emoji?: string
+  workspace?: string
+  model?: string
+  routing?: Record<string, unknown>
+}
+
+/** List all configured agents */
+export async function listAgents(): Promise<AgentInfo[]> {
+  const raw = await runCLI(['agents', 'list', '--json'])
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : parsed.agents ?? parsed.data ?? []
+  } catch {
+    return []
+  }
 }
