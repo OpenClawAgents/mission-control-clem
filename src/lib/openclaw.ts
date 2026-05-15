@@ -239,13 +239,17 @@ export async function listCronJobs(): Promise<CronJob[]> {
 
   // Try proxy through local dashboard server (for Vercel deployments)
   try {
-    const data = await proxyCLICmd('cron') as Record<string, unknown>[] | null
-    if (data && data.length > 0) {
-      return data.map((j: Record<string, unknown>) => ({
-        ...j,
-        agentId: (j.agentId as string | undefined) ?? undefined,
-        state: (j.state as Record<string, unknown> | undefined) ?? undefined,
-      } as CronJob))
+    const data = await proxyCLICmd('cron')
+    if (data && typeof data === 'object') {
+      // CLI returns { jobs: [...], total, offset, limit, hasMore } or an array
+      const jobs = Array.isArray(data) ? data : (data as Record<string, unknown>).jobs as Record<string, unknown>[] | undefined
+      if (jobs && jobs.length > 0) {
+        return jobs.map((j: Record<string, unknown>) => ({
+          ...j,
+          agentId: (j.agentId as string | undefined) ?? undefined,
+          state: (j.state as Record<string, unknown> | undefined) ?? undefined,
+        } as CronJob))
+      }
     }
   } catch {
     // Proxy not available
@@ -395,16 +399,20 @@ export async function listAgents(): Promise<AgentInfo[]> {
 
   // Try proxy through local dashboard server (for Vercel deployments)
   try {
-    const data = await proxyCLICmd('agents') as Record<string, unknown>[] | null
-    if (data && data.length > 0) {
-      return data.map((a: Record<string, unknown>) => ({
-        agentId: (a.agentId as string) ?? (a.id as string),
-        name: (a.identityName as string) ?? (a.name as string) ?? (a.id as string),
-        emoji: (a.identityEmoji as string) ?? (a.emoji as string),
-        workspace: a.workspace as string | undefined,
-        model: a.model as string | undefined,
-        routing: a.routing as Record<string, unknown> | undefined,
-      }))
+    const data = await proxyCLICmd('agents')
+    if (data && typeof data === 'object') {
+      // CLI returns an array of agents
+      const agents = Array.isArray(data) ? data : (data as Record<string, unknown>).agents as Record<string, unknown>[] | undefined
+      if (agents && agents.length > 0) {
+        return agents.map((a: Record<string, unknown>) => ({
+          agentId: (a.agentId as string) ?? (a.id as string),
+          name: (a.identityName as string) ?? (a.name as string) ?? (a.id as string),
+          emoji: (a.identityEmoji as string) ?? (a.emoji as string),
+          workspace: a.workspace as string | undefined,
+          model: a.model as string | undefined,
+          routing: a.routing as Record<string, unknown> | undefined,
+        }))
+      }
     }
   } catch {
     // Proxy not available
