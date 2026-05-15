@@ -22,7 +22,7 @@ const execFileAsync = promisify(execFile)
 
 const GATEWAY_PORT = Number(process.env.OPENCLAW_GATEWAY_PORT || 18789)
 const GATEWAY_HOST = process.env.OPENCLAW_GATEWAY_HOST || '127.0.0.1'
-const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL || ''
+const DASHBOARD_URL = process.env.DASHBOARD_URL || process.env.NEXT_PUBLIC_DASHBOARD_URL || ''
 // If host is a full domain (Cloudflare tunnel), use HTTPS without port
 // Otherwise use local HTTP with the configured port
 const GATEWAY_BASE = GATEWAY_HOST.includes('.')

@@ -62,11 +62,11 @@ if [ -n "$GATEWAY_URL" ]; then
   fi
   echo "Updated .env.local with Gateway host: $GW_HOST"
   
-  # Update or add NEXT_PUBLIC_DASHBOARD_URL
-  if grep -q "^NEXT_PUBLIC_DASHBOARD_URL=" "$PROJECT_DIR/.env.local"; then
-    sed -i.bak2 "s|^NEXT_PUBLIC_DASHBOARD_URL=.*|NEXT_PUBLIC_DASHBOARD_URL=$DASHBOARD_URL|" "$PROJECT_DIR/.env.local"
+  # Update or add DASHBOARD_URL
+  if grep -q "^DASHBOARD_URL=" "$PROJECT_DIR/.env.local"; then
+    sed -i.bak2 "s|^DASHBOARD_URL=.*|DASHBOARD_URL=$DASHBOARD_URL|" "$PROJECT_DIR/.env.local"
   else
-    echo "NEXT_PUBLIC_DASHBOARD_URL=$DASHBOARD_URL" >> "$PROJECT_DIR/.env.local"
+    echo "DASHBOARD_URL=$DASHBOARD_URL" >> "$PROJECT_DIR/.env.local"
   fi
   echo "Updated .env.local with Dashboard URL: $DASHBOARD_URL"
   
