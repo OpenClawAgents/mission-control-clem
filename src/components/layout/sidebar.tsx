@@ -20,6 +20,7 @@ import {
   Flame,
   Repeat,
   ScrollText,
+  LogOut,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -234,8 +235,18 @@ export function Sidebar() {
       )}>
         <div className="h-2 w-2 rounded-full bg-[#22C55E] animate-pulse shrink-0" />
         {!collapsed && (
-          <span className="text-f-2xs text-white/60">Connected</span>
+          <span className="text-f-2xs text-white/60 flex-1">Connected</span>
         )}
+        <button
+          onClick={async () => {
+            await fetch('/api/auth/logout', { method: 'POST' })
+            window.location.href = '/auth/login'
+          }}
+          className="text-white/30 hover:text-white/70 transition-colors shrink-0"
+          title="Sign out"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
       </div>
     </aside>
   )

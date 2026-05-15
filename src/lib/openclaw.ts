@@ -188,7 +188,7 @@ export interface CronRun {
   error?: string
 }
 
-/** List all cron jobs */
+/** List all cron jobs — normalizes fields */
 export async function listCronJobs(): Promise<CronJob[]> {
   // Try CLI first (most reliable)
   try {
@@ -196,10 +196,16 @@ export async function listCronJobs(): Promise<CronJob[]> {
       const raw = await runCLI(['cron', 'list', '--json'])
       const parsed = JSON.parse(raw)
       const jobs = Array.isArray(parsed) ? parsed : parsed.jobs ?? parsed.data ?? []
-      if (jobs.length > 0) return jobs
+      if (jobs.length > 0) {
+        return jobs.map((j: Record<string, unknown>) => ({
+          ...j,
+          agentId: j.agentId ?? undefined,
+          state: j.state ?? undefined,
+        }))
+      }
     }
   } catch {
-    // CLI not available or failed — fall through
+    // CLI not available or failed
   }
 
   // Fallback: try Gateway tool
@@ -313,7 +319,7 @@ export interface AgentInfo {
   routing?: Record<string, unknown>
 }
 
-/** List all configured agents */
+/** List all configured agents — normalizes 'id' field to 'agentId' */
 export async function listAgents(): Promise<AgentInfo[]> {
   // CLI is the primary way to list agents
   try {
@@ -321,7 +327,15 @@ export async function listAgents(): Promise<AgentInfo[]> {
       const raw = await runCLI(['agents', 'list', '--json'])
       const parsed = JSON.parse(raw)
       const agents = Array.isArray(parsed) ? parsed : parsed.agents ?? parsed.data ?? []
-      if (agents.length > 0) return agents
+      // Normalize: CLI returns 'id', but we use 'agentId' everywhere
+      return agents.map((a: Record<string, unknown>) => ({
+        agentId: a.agentId ?? a.id,
+        name: (a.identityName as string) ?? (a.name as string) ?? (a.id as string),
+        emoji: (a.identityEmoji as string) ?? (a.emoji as string),
+        workspace: a.workspace as string | undefined,
+        model: a.model as string | undefined,
+        routing: a.routing as Record<string, unknown> | undefined,
+      }))
     }
   } catch {
     // CLI not available

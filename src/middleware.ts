@@ -1,48 +1,34 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+
+// Simple auth: check for a session cookie set after login
+// For a personal dashboard behind a tunnel, we use a simple password gate
+// instead of full Supabase auth which requires email verification etc.
+
+const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || 'missioncontrol'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Always allow: static assets, API routes, auth routes, favicon, root
   if (
-    pathname.startsWith('/auth') ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/') ||
+    pathname.startsWith('/auth/') ||
     pathname === '/favicon.ico' ||
     pathname === '/'
   ) {
     return NextResponse.next()
   }
 
-  let response = NextResponse.next({ request })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value)
-            response.cookies.set(name, value, options)
-          })
-        },
-      },
-    }
-  )
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    const loginUrl = new URL('/auth/login', request.url)
-    return NextResponse.redirect(loginUrl)
+  // Check for auth cookie
+  const authCookie = request.cookies.get('mc-auth')
+  if (authCookie?.value === 'authenticated') {
+    return NextResponse.next()
   }
 
-  return response
+  // Redirect to login
+  const loginUrl = new URL('/auth/login', request.url)
+  return NextResponse.redirect(loginUrl)
 }
 
 export const config = {
