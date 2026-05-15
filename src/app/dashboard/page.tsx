@@ -121,11 +121,11 @@ interface ActivityItem {
 // ---------------------------------------------------------------------------
 
 const quickActions = [
-  { label: 'Add Content', href: '/dashboard/content', icon: BookOpen },
+  { label: 'Digital Library', href: '/dashboard/library', icon: BookOpen },
+  { label: 'Pipeline', href: '/dashboard/pipeline', icon: Zap },
+  { label: 'Add Content', href: '/dashboard/content', icon: Edit3 },
   { label: 'Catalog Video', href: '/dashboard/videos', icon: Activity },
-  { label: 'Write Digest', href: '/dashboard/digests', icon: Newspaper },
-  { label: 'New Script', href: '/dashboard/scripts', icon: Edit3 },
-  { label: 'Automations', href: '/dashboard/automation', icon: Zap },
+  { label: 'Digests', href: '/dashboard/digests', icon: Newspaper },
   { label: 'Agent Status', href: '/dashboard/agents', icon: Bot },
 ]
 

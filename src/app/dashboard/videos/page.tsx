@@ -1,33 +1,165 @@
-import { PageHeader, GlassCard, EmptyState } from '@/components/ds'
-import { Video, Plus } from 'lucide-react'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { PageHeader, GlassCard, EmptyState, MetricCard } from '@/components/ds'
+import { Video, Plus, Clock, HardDrive, Tag, Film, Search } from 'lucide-react'
+import { getVideos, type Video as VideoType } from '@/lib/api'
+
+function formatDuration(seconds: number | null): string {
+  if (!seconds) return '—'
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
 
 export default function VideosPage() {
+  const [videos, setVideos] = useState<VideoType[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getVideos()
+        setVideos(data)
+      } catch {
+        // Table may be empty
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const filtered = videos.filter((v) => {
+    if (!searchQuery) return true
+    const q = searchQuery.toLowerCase()
+    return (
+      v.title.toLowerCase().includes(q) ||
+      v.tags?.some((t) => t.toLowerCase().includes(q))
+    )
+  })
+
+  const totalDuration = videos.reduce((sum, v) => sum + (v.duration_seconds || 0), 0)
+  const taggedCount = videos.filter((v) => v.tags && v.tags.length > 0).length
+  const transcriptCount = videos.filter((v) => v.transcript).length
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Video Catalog"
-        subtitle="Raw footage, clips, and metadata"
+        subtitle="Raw footage, clips, and tagged video assets"
         action={
           <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
             <Plus className="h-4 w-4" />
-            Catalog Video
+            Add Video
           </button>
         }
       />
 
-      <GlassCard hover={false}>
-        <EmptyState
-          icon={<Video className="h-12 w-12" />}
-          title="No videos cataloged"
-          description="Tag clips from raw footage with metadata for fast search and retrieval."
-          action={
-            <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
-              <Plus className="h-4 w-4" />
-              Catalog Your First Video
-            </button>
-          }
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard
+          label="Total Videos"
+          value={loading ? '...' : String(videos.length)}
+          change={videos.length > 0 ? 'cataloged' : 'Ready to add'}
+          changeType={videos.length > 0 ? 'positive' : 'neutral'}
+          icon={<Video className="h-5 w-5" />}
         />
-      </GlassCard>
+        <MetricCard
+          label="Tagged"
+          value={String(taggedCount)}
+          change={taggedCount > 0 ? `${Math.round((taggedCount / Math.max(videos.length, 1)) * 100)}%` : '0%'}
+          changeType="neutral"
+          icon={<Tag className="h-5 w-5" />}
+        />
+        <MetricCard
+          label="Transcribed"
+          value={String(transcriptCount)}
+          change={transcriptCount > 0 ? 'searchable' : 'Not yet'}
+          changeType="neutral"
+          icon={<Film className="h-5 w-5" />}
+        />
+        <MetricCard
+          label="Total Duration"
+          value={totalDuration > 0 ? formatDuration(totalDuration) : '0:00'}
+          change="Combined"
+          changeType="neutral"
+          icon={<Clock className="h-5 w-5" />}
+        />
+      </div>
+
+      {videos.length > 0 && (
+        <GlassCard>
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+            <input
+              type="text"
+              placeholder="Search by title or tag..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-white/[0.04] border border-white/[0.06] text-f-base text-white placeholder:text-white/30 focus:outline-none focus:border-[#F59E0B]/40 focus:ring-1 focus:ring-[#F59E0B]/20 transition-all"
+            />
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="text-center py-8 text-f-base text-white/40">
+              No videos match &quot;{searchQuery}&quot;
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filtered.map((video) => (
+                <div
+                  key={video.id}
+                  className="flex items-center gap-3 py-3 px-3 rounded-[10px] bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] hover:border-white/[0.08] transition-all group cursor-pointer"
+                >
+                  <div className="h-10 w-14 rounded-[8px] bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
+                    <Film className="h-4 w-4 text-white/20" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-f-base text-white/90 font-medium truncate">{video.title}</div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {video.duration_seconds && (
+                        <span className="text-f-xs text-white/40">{formatDuration(video.duration_seconds)}</span>
+                      )}
+                      {video.resolution && (
+                        <span className="text-f-xs text-white/30">{video.resolution}</span>
+                      )}
+                      {video.tags && video.tags.length > 0 && (
+                        <span className="text-f-xs text-white/25">
+                          {video.tags.slice(0, 3).join(' · ')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-f-xs text-white/30">{formatDate(video.created_at)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </GlassCard>
+      )}
+
+      {!loading && videos.length === 0 && (
+        <GlassCard hover={false}>
+          <EmptyState
+            icon={<HardDrive className="h-12 w-12" />}
+            title="No videos cataloged yet"
+            description="AirDrop footage to the Mac Mini and it'll auto-appear here once tagged. Or add videos manually to start building your catalog."
+            action={
+              <button className="inline-flex items-center gap-2 rounded-[12px] bg-[#F59E0B]/15 text-white hover:bg-[#F59E0B]/25 border border-[#F59E0B]/20 px-4 py-2 text-f-base font-medium transition-all">
+                <Plus className="h-4 w-4" />
+                Add First Video
+              </button>
+            }
+          />
+        </GlassCard>
+      )}
     </div>
   )
 }
