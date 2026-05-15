@@ -10,7 +10,7 @@ export async function GET() {
     if (!gw.reachable) {
       return NextResponse.json({
         ok: false,
-        error: `Gateway not reachable at ${gw.host}:${gw.port}`,
+        error: `Gateway not reachable at ${gw.baseUrl}`,
         hint: 'The dashboard must be running on the same machine as the OpenClaw Gateway.',
         jobs: [],
       }, { status: 503 })
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     if (!gw.reachable) {
       return NextResponse.json({
         ok: false,
-        error: `Gateway not reachable at ${gw.host}:${gw.port}`,
+        error: `Gateway not reachable at ${gw.baseUrl}`,
       }, { status: 503 })
     }
 

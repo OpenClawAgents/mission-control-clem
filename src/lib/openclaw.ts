@@ -22,7 +22,11 @@ const execFileAsync = promisify(execFile)
 
 const GATEWAY_PORT = Number(process.env.OPENCLAW_GATEWAY_PORT || 18789)
 const GATEWAY_HOST = process.env.OPENCLAW_GATEWAY_HOST || '127.0.0.1'
-const GATEWAY_BASE = `http://${GATEWAY_HOST}:${GATEWAY_PORT}`
+// If host is a full domain (Cloudflare tunnel), use HTTPS without port
+// Otherwise use local HTTP with the configured port
+const GATEWAY_BASE = GATEWAY_HOST.includes('.')
+  ? `https://${GATEWAY_HOST}`
+  : `http://${GATEWAY_HOST}:${GATEWAY_PORT}`
 
 let _cachedToken: string | undefined
 
@@ -353,16 +357,18 @@ export async function checkGatewayConnection(): Promise<{
   reachable: boolean
   host: string
   port: number
+  baseUrl: string
   error?: string
 }> {
   try {
     const reachable = await isGatewayReachable()
-    return { reachable, host: GATEWAY_HOST, port: GATEWAY_PORT }
+    return { reachable, host: GATEWAY_HOST, port: GATEWAY_PORT, baseUrl: GATEWAY_BASE }
   } catch (err) {
     return {
       reachable: false,
       host: GATEWAY_HOST,
       port: GATEWAY_PORT,
+      baseUrl: GATEWAY_BASE,
       error: err instanceof Error ? err.message : 'Unknown error',
     }
   }
