@@ -3,6 +3,17 @@ import { listAgents, listCronJobs, listSessions, checkGatewayConnection } from '
 
 export const dynamic = 'force-dynamic'
 
+// Known agents — used as fallback when CLI is unavailable (e.g., on Vercel)
+const KNOWN_AGENTS = [
+  { agentId: 'main', name: 'Clem', emoji: '🦞' },
+  { agentId: 'content-strategist', name: 'Content Strategist', emoji: '📝' },
+  { agentId: 'research-scout', name: 'Research Scout', emoji: '🔍' },
+  { agentId: 'script-writer', name: 'Script Writer', emoji: '🎬' },
+  { agentId: 'digest-compiler', name: 'Digest Compiler', emoji: '📰' },
+  { agentId: 'video-cataloger', name: 'Video Cataloger', emoji: '🎥' },
+  { agentId: 'library-indexer', name: 'Library Indexer', emoji: '📚' },
+]
+
 export async function GET() {
   try {
     // Check if Gateway is reachable first
@@ -16,8 +27,13 @@ export async function GET() {
       }, { status: 503 })
     }
 
-    const [agents, cronJobs, sessions] = await Promise.all([
-      listAgents(),
+    // Try CLI first (works locally), fall back to known agents (for Vercel)
+    let agents = await listAgents()
+    if (agents.length === 0) {
+      agents = KNOWN_AGENTS.map(a => ({ ...a, workspace: undefined, model: undefined, routing: undefined }))
+    }
+
+    const [cronJobs, sessions] = await Promise.all([
       listCronJobs(),
       listSessions().catch(() => ({ count: 0, sessions: [] })),
     ])

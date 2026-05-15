@@ -345,7 +345,22 @@ export async function listAgents(): Promise<AgentInfo[]> {
     // CLI not available
   }
 
-  // No HTTP fallback for agent listing — return empty
+  // No CLI available — try Gateway HTTP
+  try {
+    const result = await invokeTool('agents', 'list', {})
+    const agents = Array.isArray(result) ? result : (result as Record<string, unknown>)?.agents ?? (result as Record<string, unknown>)?.data ?? []
+    return (agents as Record<string, unknown>[]).map((a: Record<string, unknown>) => ({
+      agentId: (a.agentId as string) ?? (a.id as string),
+      name: (a.identityName as string) ?? (a.name as string) ?? (a.id as string),
+      emoji: (a.identityEmoji as string) ?? (a.emoji as string),
+      workspace: a.workspace as string | undefined,
+      model: a.model as string | undefined,
+      routing: a.routing as Record<string, unknown> | undefined,
+    }))
+  } catch {
+    // Gateway not available either
+  }
+
   return []
 }
 
