@@ -62,18 +62,26 @@ if [ -n "$GATEWAY_URL" ]; then
   fi
   echo "Updated .env.local with Gateway host: $GW_HOST"
   
-  # Also update Vercel env vars
+  # Update or add NEXT_PUBLIC_DASHBOARD_URL
+  if grep -q "^NEXT_PUBLIC_DASHBOARD_URL=" "$PROJECT_DIR/.env.local"; then
+    sed -i.bak2 "s|^NEXT_PUBLIC_DASHBOARD_URL=.*|NEXT_PUBLIC_DASHBOARD_URL=$DASHBOARD_URL|" "$PROJECT_DIR/.env.local"
+  else
+    echo "NEXT_PUBLIC_DASHBOARD_URL=$DASHBOARD_URL" >> "$PROJECT_DIR/.env.local"
+  fi
+  echo "Updated .env.local with Dashboard URL: $DASHBOARD_URL"
+  
+  # Also update or add Gateway token
   TOKEN=$(python3 -c "import json; c=json.load(open('$HOME/.openclaw/openclaw.json')); print(c['gateway']['auth']['token'])" 2>/dev/null || echo "")
   if [ -n "$TOKEN" ]; then
     if grep -q "^OPENCLAW_GATEWAY_TOKEN=" "$PROJECT_DIR/.env.local"; then
-      sed -i.bak2 "s|^OPENCLAW_GATEWAY_TOKEN=.*|OPENCLAW_GATEWAY_TOKEN=$TOKEN|" "$PROJECT_DIR/.env.local"
+      sed -i.bak3 "s|^OPENCLAW_GATEWAY_TOKEN=.*|OPENCLAW_GATEWAY_TOKEN=$TOKEN|" "$PROJECT_DIR/.env.local"
     else
       echo "OPENCLAW_GATEWAY_TOKEN=$TOKEN" >> "$PROJECT_DIR/.env.local"
     fi
   fi
 fi
 
-rm -f "$PROJECT_DIR/.env.local.bak" "$PROJECT_DIR/.env.local.bak2"
+rm -f "$PROJECT_DIR/.env.local.bak" "$PROJECT_DIR/.env.local.bak2" "$PROJECT_DIR/.env.local.bak3"
 
 # 3. Start Next.js production server (reads .env.local at startup)
 nohup npx next start -p 3000 > "$LOG_DIR/next-stdout.log" 2> "$LOG_DIR/next-stderr.log" &

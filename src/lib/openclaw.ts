@@ -22,6 +22,7 @@ const execFileAsync = promisify(execFile)
 
 const GATEWAY_PORT = Number(process.env.OPENCLAW_GATEWAY_PORT || 18789)
 const GATEWAY_HOST = process.env.OPENCLAW_GATEWAY_HOST || '127.0.0.1'
+const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL || ''
 // If host is a full domain (Cloudflare tunnel), use HTTPS without port
 // Otherwise use local HTTP with the configured port
 const GATEWAY_BASE = GATEWAY_HOST.includes('.')
@@ -42,6 +43,22 @@ async function getGatewayToken(): Promise<string> {
   if (!token) throw new Error('No gateway auth token found in config')
   _cachedToken = token
   return token
+}
+
+/** Proxy a CLI command through the local dashboard server */
+async function proxyCLICmd(cmd: 'agents' | 'cron' | 'sessions'): Promise<unknown> {
+  if (!DASHBOARD_URL) return null
+  try {
+    const res = await fetch(`${DASHBOARD_URL}/api/cli?cmd=${cmd}`, {
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return null
+    const json = await res.json()
+    if (json.ok) return json.data
+  } catch {
+    // Proxy not available
+  }
+  return null
 }
 
 /** Check if Gateway is reachable */
@@ -217,8 +234,24 @@ export async function listCronJobs(): Promise<CronJob[]> {
     const result = await invokeTool('cron', 'list', {}) as { jobs?: CronJob[] }
     return result?.jobs ?? []
   } catch {
-    return []
+    // Gateway tool not available
   }
+
+  // Try proxy through local dashboard server (for Vercel deployments)
+  try {
+    const data = await proxyCLICmd('cron') as Record<string, unknown>[] | null
+    if (data && data.length > 0) {
+      return data.map((j: Record<string, unknown>) => ({
+        ...j,
+        agentId: (j.agentId as string | undefined) ?? undefined,
+        state: (j.state as Record<string, unknown> | undefined) ?? undefined,
+      } as CronJob))
+    }
+  } catch {
+    // Proxy not available
+  }
+
+  return []
 }
 
 /** Get runs for a cron job */
@@ -331,7 +364,6 @@ export async function listAgents(): Promise<AgentInfo[]> {
       const raw = await runCLI(['agents', 'list', '--json'])
       const parsed = JSON.parse(raw)
       const agents = Array.isArray(parsed) ? parsed : parsed.agents ?? parsed.data ?? []
-      // Normalize: CLI returns 'id', but we use 'agentId' everywhere
       return agents.map((a: Record<string, unknown>) => ({
         agentId: a.agentId ?? a.id,
         name: (a.identityName as string) ?? (a.name as string) ?? (a.id as string),
@@ -345,7 +377,7 @@ export async function listAgents(): Promise<AgentInfo[]> {
     // CLI not available
   }
 
-  // No CLI available — try Gateway HTTP
+  // Try Gateway HTTP
   try {
     const result = await invokeTool('agents', 'list', {})
     const agents = Array.isArray(result) ? result : (result as Record<string, unknown>)?.agents ?? (result as Record<string, unknown>)?.data ?? []
@@ -358,7 +390,24 @@ export async function listAgents(): Promise<AgentInfo[]> {
       routing: a.routing as Record<string, unknown> | undefined,
     }))
   } catch {
-    // Gateway not available either
+    // Gateway doesn't support agents tool
+  }
+
+  // Try proxy through local dashboard server (for Vercel deployments)
+  try {
+    const data = await proxyCLICmd('agents') as Record<string, unknown>[] | null
+    if (data && data.length > 0) {
+      return data.map((a: Record<string, unknown>) => ({
+        agentId: (a.agentId as string) ?? (a.id as string),
+        name: (a.identityName as string) ?? (a.name as string) ?? (a.id as string),
+        emoji: (a.identityEmoji as string) ?? (a.emoji as string),
+        workspace: a.workspace as string | undefined,
+        model: a.model as string | undefined,
+        routing: a.routing as Record<string, unknown> | undefined,
+      }))
+    }
+  } catch {
+    // Proxy not available
   }
 
   return []
