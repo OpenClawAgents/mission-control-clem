@@ -8,6 +8,8 @@ const supabase = createClient()
 
 export type ContentStatus = 'draft' | 'review' | 'published' | 'archived'
 export type ContentType = 'newsletter' | 'script' | 'social_post' | 'research' | 'digest' | 'video_clip' | 'draft'
+export type PipelineStage = 'idea' | 'script' | 'filming' | 'editing' | 'scheduled' | 'published' | 'tracking'
+export type RepurposeType = 'reel_script' | 'carousel' | 'caption' | 'newsletter_repurpose' | 'long_form'
 export type DigestCategory = 'psychedelic_law' | 'church' | 'dea' | 'state_reform' | 'other'
 
 export interface ContentItem {
@@ -21,6 +23,9 @@ export interface ContentItem {
   tags: string[]
   source_url: string | null
   published_at: string | null
+  pipeline_stage?: PipelineStage | null
+  source_content_id?: string | null
+  repurpose_type?: RepurposeType | null
   created_at: string
   updated_at: string
 }
