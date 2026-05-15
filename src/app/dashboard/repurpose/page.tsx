@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, MetricCard, EmptyState } from '@/components/ds'
-import { BookOpen, ArrowRight, Sparkles, Plus, FileText, Film, Share2, PenTool } from 'lucide-react'
+import { Mail, ArrowRight, Sparkles, Plus, FileText, Film, Share2, PenTool, Repeat } from 'lucide-react'
 import { CreateModal } from '@/components/create-modal'
 
 interface ReelScript {
@@ -111,7 +111,7 @@ export default function RepurposePage() {
           value={loading ? '...' : String(entries.length)}
           change="Repurposed"
           changeType="neutral"
-          icon={<BookOpen className="h-5 w-5" />}
+          icon={<Mail className="h-5 w-5" />}
         />
         <MetricCard
           label="Reel Scripts"
@@ -145,7 +145,7 @@ export default function RepurposePage() {
       ) : entries.length === 0 ? (
         <GlassCard hover={false}>
           <EmptyState
-            icon={<BookOpen className="h-12 w-12" />}
+            icon={<Mail className="h-12 w-12" />}
             title="No repurposed content yet"
             description="Import a newsletter and generate reel scripts, carousels, and captions. Use the Repurpose Newsletter button above to get started."
           />
@@ -162,7 +162,7 @@ export default function RepurposePage() {
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="h-10 w-10 rounded-[10px] bg-[#F59E0B]/10 border border-[#F59E0B]/20 flex items-center justify-center shrink-0">
-                      <BookOpen className="h-5 w-5 text-[#F59E0B]" />
+                      <Repeat className="h-5 w-5 text-[#F59E0B]" />
                     </div>
                     <div className="min-w-0">
                       <h3 className="text-f-base font-semibold text-white truncate">{entry.source_title}</h3>

@@ -16,6 +16,7 @@ import {
   Timer,
   Calendar,
   Loader2,
+  ListTodo,
 } from 'lucide-react'
 import { getContentCounts, getDigestCounts, type ContentType, type ContentStatus } from '@/lib/api'
 
@@ -282,7 +283,7 @@ export default function DashboardPage() {
               value={String(tasks.active)}
               change={`${tasks.total} total · ${tasks.failures} failed`}
               changeType={tasks.failures > 0 ? 'negative' : 'neutral'}
-              icon={<Server className="h-5 w-5" />}
+              icon={<ListTodo className="h-5 w-5" />}
             />
             <MetricCard
               label="Gateway"

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, MetricCard, EmptyState } from '@/components/ds'
-import { TrendingUp, Users, Eye, Heart, ArrowUpRight, ArrowDownRight, Sparkles, Film, Hash, Star, Plus } from 'lucide-react'
+import { BarChart3, Users, Eye, Heart, ArrowUpRight, ArrowDownRight, Sparkles, Film, Hash, Star, Plus } from 'lucide-react'
 import { CreateModal } from '@/components/create-modal'
 
 interface GrowthMetric {
@@ -32,8 +32,8 @@ const platformIcons: Record<string, typeof Star> = {
   youtube: Film,
   facebook: Users,
   twitter: Hash,
-  newsletter: TrendingUp,
-  other: TrendingUp,
+  newsletter: BarChart3,
+  other: BarChart3,
 }
 
 const platformColors: Record<string, string> = {
@@ -153,7 +153,7 @@ export default function GrowthPage() {
           value={loading ? '...' : metrics.length > 0 ? String(metrics.reduce((sum, m) => sum + (m.impressions || 0), 0)) : '0'}
           change="30 days"
           changeType="neutral"
-          icon={<TrendingUp className="h-5 w-5" />}
+          icon={<BarChart3 className="h-5 w-5" />}
         />
       </div>
 
@@ -166,7 +166,7 @@ export default function GrowthPage() {
       ) : metrics.length === 0 ? (
         <GlassCard hover={false}>
           <EmptyState
-            icon={<TrendingUp className="h-12 w-12" />}
+            icon={<BarChart3 className="h-12 w-12" />}
             title="No growth data yet"
             description="Start tracking your followers, engagement, and platform metrics. Add daily numbers to see trends over time."
           />
@@ -174,7 +174,7 @@ export default function GrowthPage() {
       ) : (
         <div className="space-y-4">
           {(Object.entries(byPlatform) as [string, GrowthMetric[]][]).map(([platform, platformMetrics]) => {
-            const Icon = platformIcons[platform] || TrendingUp
+            const Icon = platformIcons[platform] || BarChart3
             const color = platformColors[platform] || '#6B7280'
             const latest = platformMetrics[0]
             const prev = platformMetrics[1]

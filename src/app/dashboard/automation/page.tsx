@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, EmptyState, MetricCard, StatusDot } from '@/components/ds'
-import { Zap, Plus, Clock, Play, Pause, RefreshCw, ExternalLink, Loader2 } from 'lucide-react'
+import { Zap, Plus, Clock, Play, Pause, RefreshCw, ExternalLink, Loader2, Timer } from 'lucide-react'
 import { CreateModal } from '@/components/create-modal'
 
 interface CronJob {
@@ -133,7 +133,7 @@ export default function AutomationPage() {
           value={loading ? '...' : String(jobs.length)}
           change={`${jobs.length} configured`}
           changeType="neutral"
-          icon={<Zap className="h-5 w-5" />}
+          icon={<Timer className="h-5 w-5" />}
         />
         <MetricCard
           label="Active"

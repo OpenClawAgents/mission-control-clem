@@ -16,8 +16,10 @@ import {
   Menu,
   Library,
   Columns3,
-  TrendingUp,
+  BarChart3,
+  Flame,
   Repeat,
+  ScrollText,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -67,9 +69,9 @@ const sections: NavSection[] = [
       { label: 'Skills', href: '/dashboard/skills', icon: Sparkles },
       { label: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
       { label: 'Automation', href: '/dashboard/automation', icon: Zap },
-      { label: 'Growth', href: '/dashboard/growth', icon: TrendingUp },
-      { label: 'Trending', href: '/dashboard/trending', icon: TrendingUp },
-      { label: 'Docs', href: '/dashboard/docs', icon: BookOpen },
+      { label: 'Growth', href: '/dashboard/growth', icon: BarChart3 },
+      { label: 'Trending', href: '/dashboard/trending', icon: Flame },
+      { label: 'Docs', href: '/dashboard/docs', icon: ScrollText },
       { label: 'Settings', href: '/dashboard/settings', icon: Settings },
     ],
   },

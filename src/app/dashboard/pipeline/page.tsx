@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, StatusDot, MetricCard } from '@/components/ds'
 import { CreateModal } from '@/components/create-modal'
-import { Plus, Lightbulb, PenTool, Camera, Film, Calendar, Globe, BarChart3, Sparkles } from 'lucide-react'
+import { Plus, Lightbulb, PenTool, Camera, Film, Calendar, Globe, BarChart3, Sparkles, Rocket, Zap } from 'lucide-react'
 import { getContent, type ContentItem, type ContentType, type ContentStatus } from '@/lib/api'
 
 type PipelineStage = 'idea' | 'script' | 'filming' | 'editing' | 'scheduled' | 'published' | 'tracking'
@@ -127,7 +127,7 @@ export default function PipelinePage() {
           value={loading ? '...' : String(items.length)}
           change={`${totalActive} active`}
           changeType="neutral"
-          icon={<Lightbulb className="h-5 w-5" />}
+          icon={<Rocket className="h-5 w-5" />}
         />
         <MetricCard
           label="In Progress"

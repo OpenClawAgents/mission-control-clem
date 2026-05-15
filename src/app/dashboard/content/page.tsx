@@ -2,18 +2,18 @@
 
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, EmptyState, MetricCard } from '@/components/ds'
-import { BookOpen, Plus, Search, Mail, PenTool, Share2, FileText, Tag } from 'lucide-react'
+import { Archive, Plus, Search, Mail, PenTool, Share2, FileText, Tag, Video, FolderOpen, ScrollText } from 'lucide-react'
 import { getContent, type ContentItem, type ContentType, type ContentStatus } from '@/lib/api'
 import { CreateModal } from '@/components/create-modal'
 
-const typeConfig: Record<ContentType, { icon: typeof BookOpen; label: string; color: string }> = {
+const typeConfig: Record<ContentType, { icon: typeof Archive; label: string; color: string }> = {
   newsletter: { icon: Mail, label: 'Newsletter', color: '#F59E0B' },
   script: { icon: PenTool, label: 'Script', color: '#A855F7' },
   social_post: { icon: Share2, label: 'Social Post', color: '#3B82F6' },
   research: { icon: Search, label: 'Research', color: '#22C55E' },
-  digest: { icon: FileText, label: 'Digest', color: '#EF4444' },
-  video_clip: { icon: BookOpen, label: 'Video Clip', color: '#EC4899' },
-  draft: { icon: FileText, label: 'Draft', color: '#6B7280' },
+  digest: { icon: ScrollText, label: 'Digest', color: '#EF4444' },
+  video_clip: { icon: Video, label: 'Video Clip', color: '#EC4899' },
+  draft: { icon: FolderOpen, label: 'Draft', color: '#6B7280' },
 }
 
 const statusColors: Record<ContentStatus, string> = {
@@ -112,7 +112,7 @@ export default function ContentPage() {
           value={loading ? '...' : String(items.length)}
           change={items.length > 0 ? `${publishedCount} published` : 'Start creating'}
           changeType={publishedCount > 0 ? 'positive' : 'neutral'}
-          icon={<BookOpen className="h-5 w-5" />}
+          icon={<Archive className="h-5 w-5" />}
         />
         <MetricCard
           label="Drafts"
@@ -223,7 +223,7 @@ export default function ContentPage() {
       {!loading && items.length === 0 && (
         <GlassCard hover={false}>
           <EmptyState
-            icon={<BookOpen className="h-12 w-12" />}
+            icon={<Archive className="h-12 w-12" />}
             title="No content yet"
             description="Start adding newsletters, scripts, research, and social posts to your library. Use the New Content button above to get started."
           />

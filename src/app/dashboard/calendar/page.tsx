@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { PageHeader, GlassCard, MetricCard, StatusDot } from '@/components/ds'
-import { Calendar, Plus, Clock, ChevronLeft, ChevronRight, Newspaper, Zap, BookOpen } from 'lucide-react'
+import { Calendar, Plus, Clock, ChevronLeft, ChevronRight, Newspaper, BookOpen, CalendarDays, Zap } from 'lucide-react'
 import { CreateModal } from '@/components/create-modal'
 import { getContent, type ContentItem } from '@/lib/api'
 
@@ -196,7 +196,7 @@ export default function CalendarPage() {
           value={String(automationCount)}
           change="Active"
           changeType="neutral"
-          icon={<Zap className="h-5 w-5" />}
+          icon={<CalendarDays className="h-5 w-5" />}
         />
         <MetricCard
           label="Digests"
